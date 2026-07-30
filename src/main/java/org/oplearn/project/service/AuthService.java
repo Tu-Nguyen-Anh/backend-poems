@@ -1,10 +1,13 @@
 package org.oplearn.project.service;
 
 import org.oplearn.project.dto.request.LoginRequest;
+import org.oplearn.project.dto.request.RegisterRequest;
 import org.oplearn.project.dto.response.TokenResponse;
 
 public interface AuthService {
   TokenResponse login(LoginRequest request);
+
+  TokenResponse register(RegisterRequest request);
 
   TokenResponse refresh(String refreshToken);
 

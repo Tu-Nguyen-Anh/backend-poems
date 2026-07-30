@@ -64,7 +64,11 @@ public class OpLearnConstants {
           "/actuator/health",
           "/actuator/info"
     };
-    public static final String[] MATCHER_AUTH_PUBLIC_API = {"/api/v1/auth/login", "/api/v1/auth/refresh"};
+    public static final String[] MATCHER_AUTH_PUBLIC_API = {
+      "/api/v1/auth/login",
+      "/api/v1/auth/register",
+      "/api/v1/auth/refresh"
+    };
     public static final String[] MATCHER_ADMIN_API = {"/api/v1/admin/**"};
   }
 

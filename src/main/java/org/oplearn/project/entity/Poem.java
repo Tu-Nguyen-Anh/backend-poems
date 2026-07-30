@@ -1,4 +1,4 @@
-package org.oplearn.project.entity;
+/*package org.oplearn.project.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,26 +23,31 @@ import org.oplearn.project.entity.base.BaseEntity;
 @NoArgsConstructor
 @ToString(exclude = "content")
 public class Poem extends BaseEntity {
-  @Column(name = "title")
-  private String title;
+  @Column(name = "name", nullable = false)
+  private String name;
+
+  @Column(name = "description")
+  private String description;
+
+  @Column(name = "year")
+  private int year;
 
   @Column(name = "content", nullable = false)
   private String content;
 
-  @Column(name = "source_url")
-  private String sourceUrl;
+  @Column(name = "transliteration")
+  private String transliteration;
 
-  @Column(name = "period")
-  private String period;
+  @Column(name = "translation")
+  private String translation;
 
-  @Column(name = "specific_genre")
-  private String specificGenre;
+  @Column(name = "language")
+  private String language;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "author_id")
-  private Author author;
+  @Column(name = "genre_id")
+  private Long genreId;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "genre_id")
-  private Genre genre;
+  @Column(name = "author_id")
+  private Long authorId;
 }
+*/

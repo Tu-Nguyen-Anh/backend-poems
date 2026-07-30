@@ -5,10 +5,14 @@ import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oplearn.project.dto.request.LoginRequest;
+import org.oplearn.project.dto.request.RegisterRequest;
 import org.oplearn.project.dto.response.TokenResponse;
 import org.oplearn.project.entity.User;
+import org.oplearn.project.entity.UserRole;
+import org.oplearn.project.exception.EmailAlreadyExistedException;
 import org.oplearn.project.exception.InvalidCredentialException;
 import org.oplearn.project.exception.InvalidRefreshTokenException;
+import org.oplearn.project.exception.UsernameAlreadyExistedException;
 import org.oplearn.project.repository.UserRepository;
 import org.oplearn.project.repository.redis.TokenRedisRepository;
 import org.oplearn.project.security.jwt.JwtTokenProvider;
@@ -31,6 +35,7 @@ public class AuthServiceImpl implements AuthService {
   private final TokenRedisRepository tokenRedisRepository;
   private final JwtTokenProvider jwtTokenProvider;
   private final PasswordEncoder passwordEncoder;
+  private final UserRepository repository;
 
   @Override
   public TokenResponse login(LoginRequest request) {
@@ -40,6 +45,28 @@ public class AuthServiceImpl implements AuthService {
     if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
       throw new InvalidCredentialException();
     }
+    return issueTokens(user);
+  }
+
+  public TokenResponse register(RegisterRequest request) {
+    if (repository.existsByUsernameAndIsDeletedFalse(request.getUsername())) {
+      throw new UsernameAlreadyExistedException();
+    }
+    if (StringUtils.hasText(request.getEmail())
+      && repository.existsByEmailAndIsDeletedFalse(request.getEmail())) {
+      throw new EmailAlreadyExistedException();
+    }
+
+    User user = User.builder()
+      .username(request.getUsername())
+      .email(request.getEmail())
+      .phoneNumber(request.getPhoneNumber())
+      .password(passwordEncoder.encode(request.getPassword()))
+      .role(UserRole.USER)
+      .build();
+
+    repository.save(user);
+
     return issueTokens(user);
   }
 
@@ -95,7 +122,7 @@ public class AuthServiceImpl implements AuthService {
   }
 
   private TokenResponse issueTokens(User user) {
-    String accessToken = jwtTokenProvider.generateAccessToken(user.getUsername(), List.of(user.getRole()));
+    String accessToken = jwtTokenProvider.generateAccessToken(user.getUsername(), List.of(user.getRole().name()));
     String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUsername());
 
     String refreshTokenId = jwtTokenProvider.parseClaims(refreshToken).getId();

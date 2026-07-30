@@ -22,4 +22,13 @@ import org.oplearn.project.entity.base.BaseEntity;
 public class Author extends BaseEntity {
   @Column(name = "name", nullable = false, unique = true)
   private String name;
+
+  @Column(name = "birth_year")
+  private int birthYear;
+
+  @Column(name = "hometown")
+  private String hometown;
+
+  @Column(name = "achievement")
+  private String achivement;
 }

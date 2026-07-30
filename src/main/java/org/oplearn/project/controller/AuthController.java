@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oplearn.project.dto.request.LoginRequest;
 import org.oplearn.project.dto.request.RefreshTokenRequest;
+import org.oplearn.project.dto.request.RegisterRequest;
 import org.oplearn.project.dto.response.ResponseGeneral;
 import org.oplearn.project.dto.response.TokenResponse;
 import org.oplearn.project.service.AuthService;
@@ -47,6 +48,12 @@ public class AuthController {
     log.info("(logout)");
     service.logout(request.getRefreshToken(), extractAccessToken(authorizationHeader));
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE);
+  }
+
+  @PostMapping("/register")
+  public ResponseGeneral<TokenResponse> register(@Valid @RequestBody RegisterRequest request) {
+    log.info("(register) username: {}", request.getUsername());
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.register(request));
   }
 
   private String extractAccessToken(String authorizationHeader) {

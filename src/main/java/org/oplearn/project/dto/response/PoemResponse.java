@@ -1,4 +1,4 @@
-package org.oplearn.project.dto.response;
+/* package org.oplearn.project.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -53,3 +53,5 @@ public class PoemResponse {
     return String.join("\n", java.util.Arrays.copyOf(lines, EXCERPT_LINES)) + "\n...";
   }
 }
+
+ */

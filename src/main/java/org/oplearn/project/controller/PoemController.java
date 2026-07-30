@@ -1,4 +1,4 @@
-package org.oplearn.project.controller;
+/*package org.oplearn.project.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,3 +43,4 @@ public class PoemController {
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.detail(id));
   }
 }
+*/
