@@ -14,5 +14,6 @@
     <include file="db/changelog/007-create-table-comments.xml"/>
     <include file="db/changelog/008-create-table-replies.xml"/>
     <include file="db/changelog/009-create-table-feedbacks.xml"/>
+    <include file="db/changelog/010-drop-table-tokens.xml"/>
 
 </databaseChangeLog>
