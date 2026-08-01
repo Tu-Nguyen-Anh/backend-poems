@@ -1,4 +1,4 @@
-package org.oplearn.project.service;
+/* package org.oplearn.project.service;
 
 import org.oplearn.project.dto.response.PageResponse;
 import org.oplearn.project.dto.response.PoemResponse;
@@ -8,3 +8,4 @@ public interface PoemService {
 
   PoemResponse detail(Long id);
 }
+*/

@@ -1,3 +1,4 @@
+/*
 package org.oplearn.project.repository;
 
 import org.oplearn.project.entity.Poem;
@@ -30,3 +31,4 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
   @EntityGraph(attributePaths = {"author", "genre"})
   Page<Poem> findAllByGenreIdAndIsDeletedFalse(Long genreId, Pageable pageable);
 }
+*/

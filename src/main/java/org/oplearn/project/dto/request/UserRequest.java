@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.oplearn.project.entity.UserRole;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,8 +23,12 @@ public class UserRequest {
   @Size(min = 8, message = "user.password.min_length")
   private String password;
 
+private String phoneNumber;
+
   private String name;
 
   @Email(message = "user.email.invalid")
   private String email;
+
+  private UserRole role;
 }
