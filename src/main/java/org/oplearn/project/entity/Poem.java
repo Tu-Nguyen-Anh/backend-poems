@@ -1,4 +1,4 @@
-/*package org.oplearn.project.entity;
+package org.oplearn.project.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -50,4 +50,4 @@ public class Poem extends BaseEntity {
   @Column(name = "author_id")
   private Long authorId;
 }
-*/
+

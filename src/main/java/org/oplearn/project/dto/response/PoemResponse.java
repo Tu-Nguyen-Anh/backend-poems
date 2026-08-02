@@ -1,12 +1,10 @@
-/* package org.oplearn.project.dto.response;
+package org.oplearn.project.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.oplearn.project.entity.Poem;
-
-import java.util.Objects;
 
 @Getter
 @Setter
@@ -16,32 +14,36 @@ public class PoemResponse {
   private static final int EXCERPT_LINES = 4;
 
   private Long id;
-  private String title;
+  private String name;
+  private String description;
+  private int year;
   private String content;
-  private String sourceUrl;
-  private String period;
-  private String specificGenre;
-  private String authorName;
+  private String transliteration;
+  private String translation;
+  private String language;
   private String genreName;
+  private String authorName;
 
-  public static PoemResponse from(Poem poem) {
-    return build(poem, poem.getContent());
+  public static PoemResponse from(Poem poem, String genreName, String authorName) {
+    return build(poem, poem.getContent(), genreName, authorName);
   }
 
-  public static PoemResponse fromSummary(Poem poem) {
-    return build(poem, excerpt(poem.getContent()));
+  public static PoemResponse fromSummary(Poem poem, String genreName, String authorName) {
+    return build(poem, excerpt(poem.getContent()), genreName, authorName);
   }
 
-  private static PoemResponse build(Poem poem, String content) {
+  private static PoemResponse build(Poem poem, String content, String genreName, String authorName) {
     return new PoemResponse(
-          poem.getId(),
-          poem.getTitle(),
-          content,
-          poem.getSourceUrl(),
-          poem.getPeriod(),
-          poem.getSpecificGenre(),
-          Objects.isNull(poem.getAuthor()) ? null : poem.getAuthor().getName(),
-          Objects.isNull(poem.getGenre()) ? null : poem.getGenre().getName()
+      poem.getId(),
+      poem.getName(),
+      poem.getDescription(),
+      poem.getYear(),
+      content,
+      poem.getTransliteration(),
+      poem.getTranslation(),
+      poem.getLanguage(),
+      genreName,
+      authorName
     );
   }
 
@@ -53,5 +55,3 @@ public class PoemResponse {
     return String.join("\n", java.util.Arrays.copyOf(lines, EXCERPT_LINES)) + "\n...";
   }
 }
-
- */
