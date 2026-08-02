@@ -30,5 +30,5 @@ public class Author extends BaseEntity {
   private String hometown;
 
   @Column(name = "achievement")
-  private String achivement;
+  private String achievement;
 }
