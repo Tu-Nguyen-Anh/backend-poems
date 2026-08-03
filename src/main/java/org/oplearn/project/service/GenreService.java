@@ -4,6 +4,7 @@ import org.oplearn.project.dto.request.GenreRequest;
 import org.oplearn.project.dto.response.GenreResponse;
 import org.oplearn.project.dto.response.PageResponse;
 import org.oplearn.project.dto.response.PoemResponse;
+import org.oplearn.project.entity.Genre;
 
 public interface GenreService {
   GenreResponse create(GenreRequest request);
@@ -17,4 +18,6 @@ public interface GenreService {
   PageResponse<GenreResponse> list(String keyword, int size, int page, boolean isAll);
 
   PageResponse<PoemResponse> listPoemByGenreId(Long id, int size, int page);
+
+  Genre getAvailableGenreAndThrow(Long id);
 }

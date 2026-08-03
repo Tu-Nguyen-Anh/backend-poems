@@ -16,16 +16,16 @@ import lombok.*;
 @AllArgsConstructor
 public class AuthorRequest {
   @NotBlank(message = "author.name.not_blank")
-  @Size(max = 255, message = "author.name.max_length")
+  @Size(max = 200, message = "author.name.max_length")
   private String name;
 
   @Min(value = 1, message = "author.birth_year.invalid")
   @Max(value = 2100, message = "author.birth_year.invalid")
   private Integer birthYear;
 
-  @Size(max = 255, message = "author.hometown.max_length")
+  @Size(max = 200, message = "author.hometown.max_length")
   private String hometown;
 
-  @Size(max = 1000, message = "author.achievement.max_length")
+  @Size(max = 200, message = "author.achievement.max_length")
   private String achievement;
 }
