@@ -24,21 +24,20 @@ public class PoemResponse {
   private String genreName;
   private String authorName;
 
+  public static PoemResponse fromSummary(PoemResponse poem) {
+    if (poem != null) {
+      poem.setContent(excerpt(poem.getContent()));
+    }
+    return poem;
+  }
+
   public static PoemResponse from(Poem poem, String genreName, String authorName) {
-    return build(poem, poem.getContent(), genreName, authorName);
-  }
-
-  public static PoemResponse fromSummary(Poem poem, String genreName, String authorName) {
-    return build(poem, excerpt(poem.getContent()), genreName, authorName);
-  }
-
-  private static PoemResponse build(Poem poem, String content, String genreName, String authorName) {
     return new PoemResponse(
       poem.getId(),
       poem.getName(),
       poem.getDescription(),
       poem.getYear(),
-      content,
+      poem.getContent(),
       poem.getTransliteration(),
       poem.getTranslation(),
       poem.getLanguage(),
@@ -48,6 +47,7 @@ public class PoemResponse {
   }
 
   private static String excerpt(String content) {
+    if (content == null) return "";
     String[] lines = content.split("\n");
     if (lines.length <= EXCERPT_LINES) {
       return content;

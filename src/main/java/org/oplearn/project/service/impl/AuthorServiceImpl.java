@@ -108,4 +108,9 @@ public class AuthorServiceImpl implements AuthorService {
       (int) poemPage.getTotalElements()
     );
   }
+
+  public Author getAvailableAuthorAndThrow(Long id) {
+    return repository.findByIdAndIsDeletedFalse(id)
+      .orElseThrow(AuthorNotFoundException::new);
+  }
 }

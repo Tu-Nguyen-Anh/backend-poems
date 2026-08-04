@@ -97,4 +97,9 @@ public class GenreServiceImpl implements GenreService {
       (int) poemPage.getTotalElements()
     );
   }
+
+  public Genre getAvailableGenreAndThrow(Long id) {
+    return repository.findByIdAndIsDeletedFalse(id)
+      .orElseThrow(GenreNotFoundException::new);
+  }
 }
