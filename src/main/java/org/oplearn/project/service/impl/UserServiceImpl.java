@@ -11,20 +11,17 @@ import org.oplearn.project.exception.UserNotFoundException;
 import org.oplearn.project.exception.UserUnauthorizedException;
 import org.oplearn.project.exception.UsernameAlreadyExistedException;
 import org.oplearn.project.repository.UserRepository;
-import org.oplearn.project.security.CustomUserDetails;
 import org.oplearn.project.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.time.Instant;
 import java.util.Objects;
 
 @Slf4j
@@ -96,6 +93,7 @@ public class UserServiceImpl implements UserService {
 
     return UserResponse.from(repository.save(user));
   }
+
   @Override
   public PageResponse<UserResponse> list(String keyword, int size, int page, boolean isAll) {
     Pageable pageable = isAll ? Pageable.unpaged() : PageRequest.of(page, size);
@@ -124,5 +122,15 @@ public class UserServiceImpl implements UserService {
       throw new UserNotFoundException();
     }
     repository.softDeleteById(id);
+  }
+
+  public User getUsernameOrThrow(String username) {
+    return repository.findByUsernameAndIsDeletedFalse(username)
+      .orElseThrow(UserNotFoundException::new);
+  }
+
+  public User getAvailableUserAndThrow(Long id) {
+    return repository.findByIdAndIsDeletedFalse(id)
+      .orElseThrow(UserNotFoundException::new);
   }
 }

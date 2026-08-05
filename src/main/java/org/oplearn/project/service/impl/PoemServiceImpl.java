@@ -96,4 +96,9 @@ public class PoemServiceImpl implements PoemService {
       (int) poems.getTotalElements()
     );
   }
+
+  public Poem getAvailablePoemAndThrow(Long id) {
+    return repository.findByIdAndIsDeletedFalse(id)
+      .orElseThrow(PoemNotFoundException::new);
+  }
 }
