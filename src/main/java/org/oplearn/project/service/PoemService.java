@@ -18,4 +18,6 @@ public interface PoemService {
   PageResponse<PoemResponse> listPoemLatest(int size, int page);
 
   PageResponse<PoemResponse> random();
+
+  Poem getAvailablePoemAndThrow(Long id);
 }

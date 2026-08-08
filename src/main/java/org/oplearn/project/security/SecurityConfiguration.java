@@ -7,6 +7,7 @@ import org.oplearn.project.security.jwt.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -41,19 +42,22 @@ public class SecurityConfiguration {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
     httpSecurity
-          .csrf(AbstractHttpConfigurer::disable)
-          .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-          .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-          .authorizeHttpRequests(auth -> auth
-                .requestMatchers(WHITE_LIST).permitAll()
-                .requestMatchers(MATCHER_AUTH_PUBLIC_API).permitAll()
-                .requestMatchers(MATCHER_ADMIN_API).hasRole(ROLE_ADMIN)
-                .anyRequest().authenticated())
-          .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-          .exceptionHandling(exception -> exception
-                .authenticationEntryPoint(unAuthenticationCustomHandler)
-                .accessDeniedHandler(unAuthorizationCustomHandler));
+      .csrf(AbstractHttpConfigurer::disable)
+      .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+      .sessionManagement(session ->
+        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+      .authorizeHttpRequests(auth -> auth
+        .requestMatchers(WHITE_LIST).permitAll()
+        .requestMatchers(MATCHER_AUTH_PUBLIC_API).permitAll()
+        .requestMatchers(MATCHER_ADMIN_API).hasRole(ROLE_ADMIN)
+        .requestMatchers(HttpMethod.POST, "/api/v1/authors/**", "/api/v1/genres/**", "/api/v1/poems/**", "/api/v1/users/**").hasRole("ADMIN")
+        .requestMatchers(HttpMethod.PUT, "/api/v1/authors/**", "/api/v1/genres/**", "/api/v1/poems/**").hasRole("ADMIN")
+        .requestMatchers(HttpMethod.DELETE, "/api/v1/authors/**", "/api/v1/genres/**", "/api/v1/poems/**" , "/api/v1/users/**").hasRole("ADMIN")
+        .anyRequest().authenticated())
+      .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+      .exceptionHandling(exception -> exception
+        .authenticationEntryPoint(unAuthenticationCustomHandler)
+        .accessDeniedHandler(unAuthorizationCustomHandler));
     return httpSecurity.build();
   }
 
