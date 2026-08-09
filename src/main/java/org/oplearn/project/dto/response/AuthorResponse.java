@@ -13,7 +13,7 @@ import org.oplearn.project.entity.Author;
 public class AuthorResponse {
   Long id;
   String name;
-  int birthYear;
+  Integer birthYear;
   String achievement;
   String hometown;
 

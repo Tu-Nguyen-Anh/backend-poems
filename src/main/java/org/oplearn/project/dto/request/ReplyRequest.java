@@ -18,6 +18,4 @@ public class ReplyRequest {
   private String content;
 
   private Long commentId;
-
-  private Long userId;
 }

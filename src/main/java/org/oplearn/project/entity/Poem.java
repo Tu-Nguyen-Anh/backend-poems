@@ -30,7 +30,7 @@ public class Poem extends BaseEntity {
   private String description;
 
   @Column(name = "year")
-  private int year;
+  private Integer year;
 
   @Column(name = "content", nullable = false)
   private String content;

@@ -20,12 +20,7 @@ public interface GenreRepository extends JpaRepository<Genre, Long> {
 
   Page<Genre> findAllByIsDeletedFalse(Pageable pageable);
 
-  @Query("""
-    select g from Genre g
-    where g.name = :name
-    and g.isDeleted = false
-    """)
-  boolean existsByName(@Param("name") String name);
+  boolean existsByNameAndIsDeletedFalse(String name);
 
   @Query("""
 

@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class GenreServiceImpl implements GenreService {
   public GenreResponse create(GenreRequest request) {
     log.info("(service) create genre");
 
-    if(repository.existsByName(request.getName())) {
+    if (repository.existsByNameAndIsDeletedFalse(request.getName())) {
       throw new GenreNameAlreadyExistedException();
     }
 
@@ -44,18 +45,25 @@ public class GenreServiceImpl implements GenreService {
     Genre genre = repository.findByIdAndIsDeletedFalse(id)
       .orElseThrow(GenreNotFoundException::new);
 
+    if (!genre.getName().equalsIgnoreCase(request.getName())
+        && repository.existsByNameAndIsDeletedFalse(request.getName())) {
+      throw new GenreNameAlreadyExistedException();
+    }
+
     genre.setName(request.getName());
 
     return GenreResponse.from(repository.save(genre));
   }
 
+  @Transactional
   public void delete(Long id) {
     log.info("(service) delete genre with id: {}", id);
 
-    Genre genre = repository.findByIdAndIsDeletedFalse(id)
-      .orElseThrow(GenreNotFoundException::new);
+    if (!repository.existsByIdAndIsDeletedFalse(id)) {
+      throw new GenreNotFoundException();
+    }
 
-    repository.deleteById(id);
+    repository.softDeleteById(id);
   }
 
   public GenreResponse detail(Long id) {
