@@ -51,7 +51,7 @@ public class SecurityConfiguration {
         .requestMatchers(MATCHER_AUTH_PUBLIC_API).permitAll()
         .requestMatchers(MATCHER_ADMIN_API).hasRole(ROLE_ADMIN)
         .requestMatchers(HttpMethod.POST, "/api/v1/authors/**", "/api/v1/genres/**", "/api/v1/poems/**", "/api/v1/users/**").hasRole("ADMIN")
-        .requestMatchers(HttpMethod.PUT, "/api/v1/authors/**", "/api/v1/genres/**", "/api/v1/poems/**").hasRole("ADMIN")
+        .requestMatchers(HttpMethod.PUT, "/api/v1/authors/**", "/api/v1/genres/**", "/api/v1/poems/**" , "/api/v1/feedbacks/status/**").hasRole("ADMIN")
         .requestMatchers(HttpMethod.DELETE, "/api/v1/authors/**", "/api/v1/genres/**", "/api/v1/poems/**" , "/api/v1/users/**").hasRole("ADMIN")
         .anyRequest().authenticated())
       .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
