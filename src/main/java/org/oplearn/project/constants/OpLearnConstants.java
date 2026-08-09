@@ -12,6 +12,7 @@ public class OpLearnConstants {
     public static final String LANGUAGE = "Accept-Language";
     public static final String DEFAULT_LANGUAGE = "en";
     public static final String PARAM_KEYWORD = "keyword";
+    public static final String PARAM_STATUS = "status";
     public static final String PARAM_SIZE = "size";
     public static final String PARAM_PAGE = "page";
     public static final String PARAM_ALL = "all";
