@@ -24,48 +24,65 @@ public class PoemFacadeServiceImpl implements PoemFacadeService {
   public PoemResponse create(PoemRequest request) {
     log.info("(facade) create poem");
 
-    Genre genre = genreService.getAvailableGenreAndThrow(request.getGenreId());
+    Genre genre = request.getGenreId() != null
+      ? genreService.getAvailableGenreAndThrow(request.getGenreId())
+      : null;
 
-    Author author = authorService.getAvailableAuthorAndThrow(request.getAuthorId());
+    Author author = request.getAuthorId() != null
+      ? authorService.getAvailableAuthorAndThrow(request.getAuthorId())
+      : null;
 
     Poem poem = Poem.builder()
       .name(request.getName())
       .description(request.getDescription())
-      .year(request.getYear() != null ? request.getYear() : 0)
+      .year(request.getYear())
       .content(request.getContent())
       .transliteration(request.getTransliteration())
       .translation(request.getTranslation())
       .language(request.getLanguage())
-      .genreId(genre.getId())
-      .authorId(author.getId())
+      .genreId(genre != null ? genre.getId() : null)
+      .authorId(author != null ? author.getId() : null)
       .build();
 
     Poem savedPoem = poemService.create(poem);
 
-    return PoemResponse.from(savedPoem, genre.getName(), author.getName());
+    return PoemResponse.from(
+      savedPoem,
+      genre != null ? genre.getName() : null,
+      author != null ? author.getName() : null
+    );
   }
+
 
   public PoemResponse update(PoemRequest request, Long id) {
     log.info("(facade) update poem");
 
-    Genre genre = genreService.getAvailableGenreAndThrow(request.getGenreId());
+    Genre genre = request.getGenreId() != null
+      ? genreService.getAvailableGenreAndThrow(request.getGenreId())
+      : null;
 
-    Author author = authorService.getAvailableAuthorAndThrow(request.getAuthorId());
+    Author author = request.getAuthorId() != null
+      ? authorService.getAvailableAuthorAndThrow(request.getAuthorId())
+      : null;
 
     Poem poem = Poem.builder()
       .name(request.getName())
       .description(request.getDescription())
-      .year(request.getYear() != null ? request.getYear() : 0)
+      .year(request.getYear())
       .content(request.getContent())
       .transliteration(request.getTransliteration())
       .translation(request.getTranslation())
       .language(request.getLanguage())
-      .genreId(genre.getId())
-      .authorId(author.getId())
+      .genreId(genre != null ? genre.getId() : null)
+      .authorId(author != null ? author.getId() : null)
       .build();
 
     Poem updatedPoem = poemService.update(id, poem);
 
-    return PoemResponse.from(updatedPoem, genre.getName(), author.getName());
+    return PoemResponse.from(
+      updatedPoem,
+      genre != null ? genre.getName() : null,
+      author != null ? author.getName() : null
+    );
   }
 }

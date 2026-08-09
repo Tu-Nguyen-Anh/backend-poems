@@ -16,7 +16,7 @@ public class PoemResponse {
   private Long id;
   private String name;
   private String description;
-  private int year;
+  private Integer year;
   private String content;
   private String transliteration;
   private String translation;

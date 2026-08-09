@@ -18,6 +18,4 @@ public class CommentRequest {
   private String content;
 
   private Long poemId;
-
-  private Long userId;
 }

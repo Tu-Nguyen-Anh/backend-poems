@@ -24,7 +24,7 @@ public class Author extends BaseEntity {
   private String name;
 
   @Column(name = "birth_year")
-  private int birthYear;
+  private Integer birthYear;
 
   @Column(name = "hometown")
   private String hometown;
