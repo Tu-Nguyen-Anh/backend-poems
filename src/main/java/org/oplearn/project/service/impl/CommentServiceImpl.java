@@ -75,4 +75,9 @@ public class CommentServiceImpl implements CommentService {
       (int) comments.getTotalElements()
     );
   }
+
+  public Comment getAvailableCommentAndThrow(Long id) {
+    return repository.findByIdAndIsDeletedFalse(id)
+      .orElseThrow(CommentNotFoundException::new);
+  }
 }

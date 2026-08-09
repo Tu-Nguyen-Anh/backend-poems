@@ -17,7 +17,7 @@ spring:
     change-log: classpath:db/master.xml
 
 server:
-  port: ${PORT:8088}
+  port: ${PORT:8089}
 
 management:
   endpoints:
