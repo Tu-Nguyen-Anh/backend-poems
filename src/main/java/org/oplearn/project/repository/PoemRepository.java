@@ -74,7 +74,11 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
         LEFT JOIN Author a ON p.authorId = a.id
         LEFT JOIN Genre g ON p.genreId = g.id
         WHERE p.isDeleted = false
-          AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')))
+          AND (
+            LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+          )
     """)
   Page<PoemResponse> search(@Param("keyword") String keyword, Pageable pageable);
 

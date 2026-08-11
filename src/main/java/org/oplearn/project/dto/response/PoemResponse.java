@@ -1,6 +1,7 @@
 package org.oplearn.project.dto.response;
 
-import lombok.AllArgsConstructor;
+import java.util.List;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,7 +9,6 @@ import org.oplearn.project.entity.Poem;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 public class PoemResponse {
   private static final int EXCERPT_LINES = 4;
@@ -23,6 +23,28 @@ public class PoemResponse {
   private String language;
   private String genreName;
   private String authorName;
+
+  // Bổ sung ở trang chi tiết (không nằm trong projection JPQL 10 tham số)
+  private String meaning;
+  private List<PoemTranslationResponse> translations;
+
+  /** Constructor dùng cho projection JPQL — GIỮ đúng 10 tham số, thứ tự cố định. */
+  public PoemResponse(
+    Long id, String name, String description, Integer year, String content,
+    String transliteration, String translation, String language,
+    String genreName, String authorName
+  ) {
+    this.id = id;
+    this.name = name;
+    this.description = description;
+    this.year = year;
+    this.content = content;
+    this.transliteration = transliteration;
+    this.translation = translation;
+    this.language = language;
+    this.genreName = genreName;
+    this.authorName = authorName;
+  }
 
   public static PoemResponse fromSummary(PoemResponse poem) {
     if (poem != null) {

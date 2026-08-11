@@ -41,6 +41,9 @@ public class Poem extends BaseEntity {
   @Column(name = "translation")
   private String translation;
 
+  @Column(name = "meaning")
+  private String meaning;
+
   @Column(name = "language")
   private String language;
 
