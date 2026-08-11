@@ -16,5 +16,8 @@
     <include file="db/changelog/009-create-table-feedbacks.xml"/>
     <include file="db/changelog/010-drop-table-tokens.xml"/>
     <include file="db/changelog/011-add-created-at-to-genres.xml"/>
+    <include file="db/changelog/012-add-poem-search-index.xml"/>
+    <include file="db/changelog/013-add-translations.xml"/>
+    <include file="db/changelog/014-add-source-url.xml"/>
 
 </databaseChangeLog>

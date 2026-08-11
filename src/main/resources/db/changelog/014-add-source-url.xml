@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <!-- Nguồn gốc bài thơ (URL crawl) — phục vụ import idempotent & truy vết nguồn -->
+  <changeSet id="014-add-source-url-to-poems" author="claude">
+    <addColumn tableName="poems">
+      <column name="source_url" type="VARCHAR(2048)"/>
+    </addColumn>
+  </changeSet>
+
+</databaseChangeLog>

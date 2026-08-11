@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oplearn.project.dto.response.PageResponse;
 import org.oplearn.project.dto.response.PoemResponse;
+import org.oplearn.project.dto.response.PoemTranslationResponse;
 import org.oplearn.project.entity.Poem;
 import org.oplearn.project.exception.PoemNotFoundException;
 import org.oplearn.project.repository.PoemRepository;
+import org.oplearn.project.repository.PoemTranslationRepository;
 import org.oplearn.project.service.PoemService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +23,7 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class PoemServiceImpl implements PoemService {
   private final PoemRepository repository;
+  private final PoemTranslationRepository translationRepository;
 
   @Override
   public PageResponse<PoemResponse> list(String keyword, int size, int page) {
@@ -38,8 +41,22 @@ public class PoemServiceImpl implements PoemService {
 
   @Override
   public PoemResponse detail(Long id) {
-    return repository.findByIdAndReturnResponse(id)
+    PoemResponse response = repository.findByIdAndReturnResponse(id)
       .orElseThrow(PoemNotFoundException::new);
+
+    // Dịch nghĩa (văn xuôi) — lấy từ entity vì projection không có
+    repository.findByIdAndIsDeletedFalse(id)
+      .ifPresent(poem -> response.setMeaning(poem.getMeaning()));
+
+    // Nhiều bản dịch thơ
+    response.setTranslations(
+      translationRepository.findByPoemIdAndIsDeletedFalseOrderBySortOrderAsc(id)
+        .stream()
+        .map(PoemTranslationResponse::from)
+        .toList()
+    );
+
+    return response;
   }
 
   @Transactional

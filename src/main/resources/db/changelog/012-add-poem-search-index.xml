@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <!-- Tìm kiếm theo câu thơ: index trigram (pg_trgm) cho LIKE '%...%' trên nội dung,
+       tên bài và tên tác giả. Index additive, không ảnh hưởng dữ liệu. -->
+  <changeSet id="012-enable-pg-trgm" author="claude">
+    <sql>CREATE EXTENSION IF NOT EXISTS pg_trgm</sql>
+  </changeSet>
+
+  <changeSet id="012-poems-content-trgm" author="claude">
+    <sql>CREATE INDEX IF NOT EXISTS idx_poems_content_trgm ON poems USING gin (lower(content) gin_trgm_ops)</sql>
+  </changeSet>
+
+  <changeSet id="012-poems-name-trgm" author="claude">
+    <sql>CREATE INDEX IF NOT EXISTS idx_poems_name_trgm ON poems USING gin (lower(name) gin_trgm_ops)</sql>
+  </changeSet>
+
+  <changeSet id="012-authors-name-trgm" author="claude">
+    <sql>CREATE INDEX IF NOT EXISTS idx_authors_name_trgm ON authors USING gin (lower(name) gin_trgm_ops)</sql>
+  </changeSet>
+
+</databaseChangeLog>
