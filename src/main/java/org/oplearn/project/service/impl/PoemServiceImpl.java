@@ -26,16 +26,24 @@ public class PoemServiceImpl implements PoemService {
   private final PoemTranslationRepository translationRepository;
 
   @Override
-  public PageResponse<PoemResponse> list(String keyword, int size, int page) {
+  public PageResponse<PoemResponse> list(String keyword, Long genreId, int size, int page) {
     Pageable pageable = PageRequest.of(page, size);
 
     Page<PoemResponse> poems = StringUtils.hasText(keyword)
-      ? repository.search(keyword, pageable)
-      : repository.findAllByIsDeletedFalse(pageable);
+      ? repository.search(keyword.trim(), genreId, pageable).map(PoemServiceImpl::toResponse)
+      : repository.findAllByIsDeletedFalse(genreId, pageable);
 
     return PageResponse.of(
       poems.map(PoemResponse::fromSummary).getContent(),
       (int) poems.getTotalElements()
+    );
+  }
+
+  private static PoemResponse toResponse(PoemRepository.PoemSearchRow row) {
+    return new PoemResponse(
+      row.getId(), row.getName(), row.getDescription(), row.getYear(), row.getContent(),
+      row.getTransliteration(), row.getTranslation(), row.getLanguage(),
+      row.getGenreName(), row.getAuthorName()
     );
   }
 

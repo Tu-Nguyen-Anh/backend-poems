@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <!-- Full-text search có trọng số thay cho LIKE toàn cục: tiêu đề (A) nặng hơn
+       nội dung (C), truy vấn qua websearch_to_tsquery + ts_rank. Config 'simple'
+       (không stemming) hợp tiếng Việt có dấu. Cột GENERATED tự cập nhật khi
+       INSERT/UPDATE — importer không cần đổi gì. -->
+  <changeSet id="015-poems-search-vec" author="claude">
+    <sql>
+      ALTER TABLE poems ADD COLUMN IF NOT EXISTS search_vec tsvector
+        GENERATED ALWAYS AS (
+          setweight(to_tsvector('simple', coalesce(name, '')), 'A') ||
+          setweight(to_tsvector('simple', coalesce(content, '')), 'C')
+        ) STORED
+    </sql>
+  </changeSet>
+
+  <changeSet id="015-poems-search-vec-gin" author="claude">
+    <sql>CREATE INDEX IF NOT EXISTS idx_poems_search_vec ON poems USING gin (search_vec)</sql>
+  </changeSet>
+
+</databaseChangeLog>

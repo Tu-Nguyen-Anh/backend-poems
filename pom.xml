@@ -16,6 +16,9 @@
   <description>REST API + PostgreSQL + JPA + JWT security</description>
 
   <properties>
+    <!-- Cố định UTF-8 để file i18n tiếng Việt không vỡ khi build trên máy khác -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>17</java.version>
     <springdoc.version>2.3.0</springdoc.version>
     <jjwt.version>0.12.5</jjwt.version>

@@ -92,6 +92,14 @@ public class AuthorServiceImpl implements AuthorService {
     );
   }
 
+  public PageResponse<AuthorResponse> listTopByPoemCount(int size, int page) {
+    log.info("(Service) list top authors by poem count");
+
+    Page<AuthorResponse> authors = repository.findTopByPoemCount(PageRequest.of(page, size));
+
+    return PageResponse.of(authors.getContent(), (int) authors.getTotalElements());
+  }
+
   public PageResponse<PoemResponse> listPoemByAuthorId(Long id, int size, int page) {
     log.info("(Service) list poem by author id");
 

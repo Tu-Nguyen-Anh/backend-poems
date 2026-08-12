@@ -22,6 +22,9 @@ public interface GenreRepository extends JpaRepository<Genre, Long> {
 
   boolean existsByNameAndIsDeletedFalse(String name);
 
+  @Query("SELECT g.id FROM Genre g WHERE g.isDeleted = false ORDER BY g.id")
+  java.util.List<Long> findIdsForSitemap();
+
   @Query("""
 
     select g from Genre g
