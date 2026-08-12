@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <!-- Index cho các query trang chủ/danh sách — trước đây đều seq scan toàn bảng.
+       Partial index (WHERE is_deleted = false) nhỏ hơn và khớp đúng filter. -->
+  <changeSet id="016-poems-created-at" author="claude">
+    <sql>CREATE INDEX IF NOT EXISTS idx_poems_created_at ON poems (created_at DESC) WHERE is_deleted = false</sql>
+  </changeSet>
+
+  <changeSet id="016-poems-author-id" author="claude">
+    <sql>CREATE INDEX IF NOT EXISTS idx_poems_author_id ON poems (author_id) WHERE is_deleted = false</sql>
+  </changeSet>
+
+  <changeSet id="016-poems-genre-id" author="claude">
+    <sql>CREATE INDEX IF NOT EXISTS idx_poems_genre_id ON poems (genre_id) WHERE is_deleted = false</sql>
+  </changeSet>
+
+</databaseChangeLog>
