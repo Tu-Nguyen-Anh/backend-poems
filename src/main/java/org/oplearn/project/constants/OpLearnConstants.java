@@ -10,7 +10,7 @@ public class OpLearnConstants {
 
     public static final String ENCODING_UTF_8 = "UTF-8";
     public static final String LANGUAGE = "Accept-Language";
-    public static final String DEFAULT_LANGUAGE = "en";
+    public static final String DEFAULT_LANGUAGE = "vi";
     public static final String PARAM_KEYWORD = "keyword";
     public static final String PARAM_STATUS = "status";
     public static final String PARAM_SIZE = "size";
@@ -63,7 +63,9 @@ public class OpLearnConstants {
           "/swagger-ui/**",
           "/v3/api-docs/**",
           "/actuator/health",
-          "/actuator/info"
+          "/actuator/info",
+          "/sitemap.xml",
+          "/sitemaps/**"
     };
     public static final String[] MATCHER_AUTH_PUBLIC_API = {
       "/api/v1/auth/login",

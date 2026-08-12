@@ -66,6 +66,15 @@ public class AuthorController {
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.list(keyword, size, page, isAll));
   }
 
+  @GetMapping("/top")
+  public ResponseGeneral<PageResponse<AuthorResponse>> listTopByPoemCount(
+    @RequestParam(name = PARAM_SIZE, defaultValue = SIZE_DEFAULT) int size,
+    @RequestParam(name = PARAM_PAGE, defaultValue = PAGE_DEFAULT) int page
+  ) {
+    log.info("(listTopByPoemCount) size: {}, page: {}", size, page);
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.listTopByPoemCount(size, page));
+  }
+
   @GetMapping("/{authorId}/poems")
   public ResponseGeneral<PageResponse<PoemResponse>> listPoemByAuthorId(
     @PathVariable Long authorId,

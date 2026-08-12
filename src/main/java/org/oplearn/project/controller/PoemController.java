@@ -26,11 +26,12 @@ public class PoemController {
   @GetMapping
   public ResponseGeneral<PageResponse<PoemResponse>> list(
     @RequestParam(name = PARAM_KEYWORD, required = false) String keyword,
+    @RequestParam(name = "genreId", required = false) Long genreId,
     @RequestParam(name = PARAM_SIZE, defaultValue = SIZE_DEFAULT) int size,
     @RequestParam(name = PARAM_PAGE, defaultValue = PAGE_DEFAULT) int page
   ) {
-    log.info("(list) keyword: {}, size: {}, page: {}", keyword, size, page);
-    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.list(keyword, size, page));
+    log.info("(list) keyword: {}, genreId: {}, size: {}, page: {}", keyword, genreId, size, page);
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.list(keyword, genreId, size, page));
   }
 
   @GetMapping("/{id}")

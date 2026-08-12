@@ -34,7 +34,7 @@ public class UnAuthorizationCustomHandler implements AccessDeniedHandler {
     ResponseGeneral<Error> body = ResponseGeneral.of(
           HttpStatus.FORBIDDEN.value(),
           HttpStatus.FORBIDDEN.getReasonPhrase(),
-          Error.of("access_denied", "You do not have permission to access this resource")
+          Error.of("access_denied", "Bạn không có quyền thực hiện thao tác này")
     );
     objectMapper.writeValue(response.getWriter(), body);
   }

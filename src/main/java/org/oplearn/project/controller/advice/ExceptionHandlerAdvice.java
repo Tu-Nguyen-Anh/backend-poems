@@ -37,7 +37,76 @@ public class ExceptionHandlerAdvice {
     log.error("(handleBaseException) code: {}, status: {}", ex.getCode(), ex.getStatus());
     return ResponseEntity
           .status(ex.getStatus())
-          .body(getError(ex.getStatus(), ex.getCode(), webRequest.getLocale(), ex.getParams()));
+          .body(getError(ex.getStatus(), ex.getCode(), new Locale(getLanguage(webRequest)), ex.getParams()));
+  }
+
+  @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ResponseGeneral<Error>> handleTypeMismatch(
+        org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex,
+        WebRequest webRequest
+  ) {
+    log.error("(handleTypeMismatch) param: {}, value: {}", ex.getName(), ex.getValue());
+    return ResponseEntity
+          .status(HttpStatus.BAD_REQUEST)
+          .body(getError(HttpStatus.BAD_REQUEST.value(), "error.param.invalid",
+                new Locale(getLanguage(webRequest)), Map.of("name", ex.getName())));
+  }
+
+  @ExceptionHandler(org.springframework.web.bind.MissingServletRequestParameterException.class)
+  public ResponseEntity<ResponseGeneral<Error>> handleMissingParam(
+        org.springframework.web.bind.MissingServletRequestParameterException ex,
+        WebRequest webRequest
+  ) {
+    log.error("(handleMissingParam) param: {}", ex.getParameterName());
+    return ResponseEntity
+          .status(HttpStatus.BAD_REQUEST)
+          .body(getError(HttpStatus.BAD_REQUEST.value(), "error.param.missing",
+                new Locale(getLanguage(webRequest)), Map.of("name", ex.getParameterName())));
+  }
+
+  @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+  public ResponseEntity<ResponseGeneral<Error>> handleUnreadableBody(
+        org.springframework.http.converter.HttpMessageNotReadableException ex,
+        WebRequest webRequest
+  ) {
+    log.error("(handleUnreadableBody) {}", ex.getMessage());
+    return ResponseEntity
+          .status(HttpStatus.BAD_REQUEST)
+          .body(getError(HttpStatus.BAD_REQUEST.value(), "error.body.unreadable", getLanguage(webRequest)));
+  }
+
+  @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+  public ResponseEntity<ResponseGeneral<Error>> handleMethodNotSupported(
+        org.springframework.web.HttpRequestMethodNotSupportedException ex,
+        WebRequest webRequest
+  ) {
+    log.error("(handleMethodNotSupported) method: {}", ex.getMethod());
+    return ResponseEntity
+          .status(HttpStatus.METHOD_NOT_ALLOWED)
+          .body(getError(HttpStatus.METHOD_NOT_ALLOWED.value(), "error.method.not_supported",
+                new Locale(getLanguage(webRequest)), Map.of("method", ex.getMethod())));
+  }
+
+  @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+  public ResponseEntity<ResponseGeneral<Error>> handleNoResource(
+        org.springframework.web.servlet.resource.NoResourceFoundException ex,
+        WebRequest webRequest
+  ) {
+    log.warn("(handleNoResource) path: {}", ex.getResourcePath());
+    return ResponseEntity
+          .status(HttpStatus.NOT_FOUND)
+          .body(getError(HttpStatus.NOT_FOUND.value(), "error.path.not_found", getLanguage(webRequest)));
+  }
+
+  @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+  public ResponseEntity<ResponseGeneral<Error>> handleDataIntegrity(
+        org.springframework.dao.DataIntegrityViolationException ex,
+        WebRequest webRequest
+  ) {
+    log.error("(handleDataIntegrity)", ex);
+    return ResponseEntity
+          .status(HttpStatus.CONFLICT)
+          .body(getError(HttpStatus.CONFLICT.value(), "error.data.conflict", getLanguage(webRequest)));
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)

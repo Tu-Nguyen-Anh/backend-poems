@@ -16,6 +16,11 @@ public class AuthorResponse {
   Integer birthYear;
   String achievement;
   String hometown;
+  Long poemCount;
+
+  public AuthorResponse(Long id, String name, Integer birthYear, String achievement, String hometown) {
+    this(id, name, birthYear, achievement, hometown, null);
+  }
 
   public static AuthorResponse from(Author author) {
     return new AuthorResponse(

@@ -36,6 +36,21 @@ public interface AuthorRepository extends JpaRepository<Author, Long> {
   @Query("update Author a set a.isDeleted = true where a.id = :id and a.isDeleted = false")
   void softDeleteById(@Param("id") Long id);
 
+  @Query("SELECT a.id FROM Author a WHERE a.isDeleted = false ORDER BY a.id")
+  java.util.List<Long> findIdsForSitemap();
+
+  @Query("""
+    SELECT new org.oplearn.project.dto.response.AuthorResponse(
+      a.id, a.name, a.birthYear, a.achievement, a.hometown, COUNT(p.id)
+    )
+    FROM Author a
+    LEFT JOIN Poem p ON p.authorId = a.id AND p.isDeleted = false
+    WHERE a.isDeleted = false
+    GROUP BY a.id, a.name, a.birthYear, a.achievement, a.hometown
+    ORDER BY COUNT(p.id) DESC, a.id
+    """)
+  Page<org.oplearn.project.dto.response.AuthorResponse> findTopByPoemCount(Pageable pageable);
+
   @Query("""
     SELECT new org.oplearn.project.dto.response.PoemResponse(
               p.id,

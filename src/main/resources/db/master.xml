@@ -19,5 +19,6 @@
     <include file="db/changelog/012-add-poem-search-index.xml"/>
     <include file="db/changelog/013-add-translations.xml"/>
     <include file="db/changelog/014-add-source-url.xml"/>
+    <include file="db/changelog/015-add-poem-fulltext.xml"/>
 
 </databaseChangeLog>
