@@ -147,6 +147,11 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
     """)
   Page<PoemResponse> findLatest(Pageable pageable);
 
+  /** Bốc id ngẫu nhiên trước (chỉ sort cột id, không kéo content) — rẻ hơn
+   *  nhiều so với ORDER BY random() trên cả dòng có nội dung bài thơ. */
+  @Query(value = "SELECT id FROM poems WHERE is_deleted = false ORDER BY random() LIMIT :n", nativeQuery = true)
+  java.util.List<Long> findRandomIds(@Param("n") int n);
+
   @Query("""
     SELECT new org.oplearn.project.dto.response.PoemResponse(
             p.id,
@@ -163,9 +168,8 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
         FROM Poem p
         LEFT JOIN Author a ON p.authorId = a.id
         LEFT JOIN Genre g ON p.genreId = g.id
-        WHERE p.isDeleted = false
-        ORDER BY function('random')
+        WHERE p.id IN :ids
     """)
-  Page<PoemResponse> findRandomPoem(Pageable pageable);
+  java.util.List<PoemResponse> findResponsesByIds(@Param("ids") java.util.List<Long> ids);
 
 }

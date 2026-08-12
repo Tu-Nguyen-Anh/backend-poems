@@ -92,12 +92,31 @@ public class AuthorServiceImpl implements AuthorService {
     );
   }
 
+  /** Cache in-memory cho widget "tác giả tiêu biểu" trang chủ — query GROUP BY
+   *  đếm toàn bảng poems khá nặng mà kết quả gần như không đổi giữa các lần import. */
+  private static final long TOP_AUTHORS_TTL_MS = 10 * 60 * 1000L;
+  private final java.util.concurrent.atomic.AtomicReference<CachedTopAuthors> topAuthorsCache =
+    new java.util.concurrent.atomic.AtomicReference<>();
+
+  private record CachedTopAuthors(String key, long at, PageResponse<AuthorResponse> data) {
+  }
+
   public PageResponse<AuthorResponse> listTopByPoemCount(int size, int page) {
     log.info("(Service) list top authors by poem count");
 
-    Page<AuthorResponse> authors = repository.findTopByPoemCount(PageRequest.of(page, size));
+    String key = size + ":" + page;
+    CachedTopAuthors hit = topAuthorsCache.get();
+    if (hit != null && hit.key().equals(key)
+        && System.currentTimeMillis() - hit.at() < TOP_AUTHORS_TTL_MS) {
+      return hit.data();
+    }
 
-    return PageResponse.of(authors.getContent(), (int) authors.getTotalElements());
+    Page<AuthorResponse> authors = repository.findTopByPoemCount(PageRequest.of(page, size));
+    PageResponse<AuthorResponse> result =
+      PageResponse.of(authors.getContent(), (int) authors.getTotalElements());
+
+    topAuthorsCache.set(new CachedTopAuthors(key, System.currentTimeMillis(), result));
+    return result;
   }
 
   public PageResponse<PoemResponse> listPoemByAuthorId(Long id, int size, int page) {

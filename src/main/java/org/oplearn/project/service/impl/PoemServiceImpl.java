@@ -112,14 +112,18 @@ public class PoemServiceImpl implements PoemService {
   }
 
   public PageResponse<PoemResponse> random() {
-    Pageable pageable = PageRequest.of(0, 10);
+    // 2 bước: bốc id ngẫu nhiên (sort nhẹ trên id) rồi mới nạp nội dung —
+    // tránh ORDER BY random() kéo + sort cả cột content trên toàn bảng.
+    java.util.List<Long> ids = repository.findRandomIds(10);
+    if (ids.isEmpty()) {
+      return PageResponse.of(java.util.List.of(), 0);
+    }
 
-    Page<PoemResponse> poems = repository.findRandomPoem(pageable);
+    java.util.List<PoemResponse> poems = repository.findResponsesByIds(ids).stream()
+      .map(PoemResponse::fromSummary)
+      .toList();
 
-    return PageResponse.of(
-      poems.map(PoemResponse::fromSummary).getContent(),
-      (int) poems.getTotalElements()
-    );
+    return PageResponse.of(poems, poems.size());
   }
 
   public Poem getAvailablePoemAndThrow(Long id) {
