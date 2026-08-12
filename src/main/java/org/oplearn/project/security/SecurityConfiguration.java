@@ -49,6 +49,12 @@ public class SecurityConfiguration {
       .authorizeHttpRequests(auth -> auth
         .requestMatchers(WHITE_LIST).permitAll()
         .requestMatchers(MATCHER_AUTH_PUBLIC_API).permitAll()
+        .requestMatchers(HttpMethod.GET,
+          "/api/v1/poems/**",
+          "/api/v1/authors/**",
+          "/api/v1/genres/**",
+          "/api/v1/comments/**",
+          "/api/v1/replies/**").permitAll()
         .requestMatchers(MATCHER_ADMIN_API).hasRole(ROLE_ADMIN)
         .requestMatchers(HttpMethod.POST, "/api/v1/authors/**", "/api/v1/genres/**", "/api/v1/poems/**", "/api/v1/users/**").hasRole("ADMIN")
         .requestMatchers(HttpMethod.PUT, "/api/v1/authors/**", "/api/v1/genres/**", "/api/v1/poems/**" , "/api/v1/feedbacks/status/**").hasRole("ADMIN")
