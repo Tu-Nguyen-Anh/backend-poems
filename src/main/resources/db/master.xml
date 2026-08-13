@@ -23,5 +23,6 @@
     <include file="db/changelog/016-add-homepage-indexes.xml"/>
     <include file="db/changelog/017-add-poem-era.xml"/>
     <include file="db/changelog/018-search-unaccent.xml"/>
+    <include file="db/changelog/019-search-author-in-vec.xml"/>
 
 </databaseChangeLog>

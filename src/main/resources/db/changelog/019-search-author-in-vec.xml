@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <!-- Tăng tốc tìm kiếm ~15-25x: nhét TÊN TÁC GIẢ vào search_vec (weight B) qua
+       trigger, để search chỉ còn 1 lookup GIN — bỏ được mệnh đề OR trên bảng
+       authors (đã JOIN) vốn ép seq-scan toàn bảng (281-608ms -> ~20ms).
+       Generated column không tham chiếu bảng khác được nên chuyển sang cột
+       thường + trigger. -->
+
+  <changeSet id="019-search-vec-column" author="claude">
+    <sql>ALTER TABLE poems DROP COLUMN IF EXISTS search_vec</sql>
+    <sql>ALTER TABLE poems ADD COLUMN search_vec tsvector</sql>
+  </changeSet>
+
+  <changeSet id="019-poems-trigger" author="claude">
+    <sql splitStatements="false"><![CDATA[
+      CREATE OR REPLACE FUNCTION poems_search_vec_trg() RETURNS trigger AS $$
+      DECLARE aname text;
+      BEGIN
+        SELECT name INTO aname FROM authors WHERE id = NEW.author_id;
+        NEW.search_vec :=
+          setweight(to_tsvector('simple', f_unaccent(coalesce(NEW.name, ''))), 'A') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(aname, ''))), 'B') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(NEW.content, ''))), 'C');
+        RETURN NEW;
+      END $$ LANGUAGE plpgsql;
+    ]]></sql>
+    <sql>DROP TRIGGER IF EXISTS trg_poems_search_vec ON poems</sql>
+    <sql>CREATE TRIGGER trg_poems_search_vec BEFORE INSERT OR UPDATE OF name, content, author_id ON poems FOR EACH ROW EXECUTE FUNCTION poems_search_vec_trg()</sql>
+  </changeSet>
+
+  <!-- Đổi tên tác giả -> làm mới search_vec của các bài thuộc tác giả đó. -->
+  <changeSet id="019-authors-trigger" author="claude">
+    <sql splitStatements="false"><![CDATA[
+      CREATE OR REPLACE FUNCTION authors_refresh_poems_search() RETURNS trigger AS $$
+      BEGIN
+        UPDATE poems SET search_vec =
+            setweight(to_tsvector('simple', f_unaccent(coalesce(name, ''))), 'A') ||
+            setweight(to_tsvector('simple', f_unaccent(coalesce(NEW.name, ''))), 'B') ||
+            setweight(to_tsvector('simple', f_unaccent(coalesce(content, ''))), 'C')
+          WHERE author_id = NEW.id;
+        RETURN NEW;
+      END $$ LANGUAGE plpgsql;
+    ]]></sql>
+    <sql>DROP TRIGGER IF EXISTS trg_authors_refresh_search ON authors</sql>
+    <sql>CREATE TRIGGER trg_authors_refresh_search AFTER UPDATE OF name ON authors FOR EACH ROW WHEN (OLD.name IS DISTINCT FROM NEW.name) EXECUTE FUNCTION authors_refresh_poems_search()</sql>
+  </changeSet>
+
+  <!-- Backfill toàn bộ (set trực tiếp search_vec nên KHÔNG kích trigger). -->
+  <changeSet id="019-backfill" author="claude">
+    <sql>
+      UPDATE poems p SET search_vec =
+          setweight(to_tsvector('simple', f_unaccent(coalesce(p.name, ''))), 'A') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(a.name, ''))), 'B') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(p.content, ''))), 'C')
+        FROM authors a WHERE a.id = p.author_id
+    </sql>
+    <sql>
+      UPDATE poems SET search_vec =
+          setweight(to_tsvector('simple', f_unaccent(coalesce(name, ''))), 'A') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(content, ''))), 'C')
+        WHERE author_id IS NULL
+    </sql>
+    <sql>CREATE INDEX IF NOT EXISTS idx_poems_search_vec ON poems USING gin (search_vec)</sql>
+  </changeSet>
+
+  <!-- Dọn index thừa: bản lower() (không unaccent) không còn query nào dùng
+       (đã thay bằng bản f_unaccent) + content_trgm (nội dung giờ nằm trong
+       search_vec, không còn lower(content) LIKE). Giảm chi phí ghi + dung lượng. -->
+  <changeSet id="019-drop-redundant-indexes" author="claude">
+    <sql>DROP INDEX IF EXISTS idx_poems_name_trgm</sql>
+    <sql>DROP INDEX IF EXISTS idx_poems_content_trgm</sql>
+    <sql>DROP INDEX IF EXISTS idx_authors_name_trgm</sql>
+  </changeSet>
+
+</databaseChangeLog>

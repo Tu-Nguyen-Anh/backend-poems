@@ -88,13 +88,11 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
           AND (
             p.search_vec @@ websearch_to_tsquery('simple', f_unaccent(:keyword))
             OR f_unaccent(lower(p.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%'
-            OR f_unaccent(lower(a.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%'
           )
         ORDER BY
           (f_unaccent(lower(p.name)) = f_unaccent(lower(:keyword))) DESC,
           (f_unaccent(lower(p.name)) LIKE f_unaccent(lower(:keyword)) || '%') DESC,
           (f_unaccent(lower(p.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%') DESC,
-          (f_unaccent(lower(a.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%') DESC,
           ts_rank(p.search_vec, websearch_to_tsquery('simple', f_unaccent(:keyword))) DESC,
           p.id
     """,
@@ -109,7 +107,6 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
           AND (
             p.search_vec @@ websearch_to_tsquery('simple', f_unaccent(:keyword))
             OR f_unaccent(lower(p.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%'
-            OR f_unaccent(lower(a.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%'
           )
     """,
     nativeQuery = true)
