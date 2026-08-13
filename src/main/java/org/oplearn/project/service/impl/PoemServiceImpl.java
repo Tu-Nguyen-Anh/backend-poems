@@ -26,12 +26,14 @@ public class PoemServiceImpl implements PoemService {
   private final PoemTranslationRepository translationRepository;
 
   @Override
-  public PageResponse<PoemResponse> list(String keyword, Long genreId, int size, int page) {
+  public PageResponse<PoemResponse> list(String keyword, Long genreId, String era, String language, int size, int page) {
     Pageable pageable = PageRequest.of(page, size);
+    String eraFilter = StringUtils.hasText(era) ? era.trim() : null;
+    String languageFilter = StringUtils.hasText(language) ? language.trim() : null;
 
     Page<PoemResponse> poems = StringUtils.hasText(keyword)
-      ? repository.search(keyword.trim(), genreId, pageable).map(PoemServiceImpl::toResponse)
-      : repository.findAllByIsDeletedFalse(genreId, pageable);
+      ? repository.search(keyword.trim(), genreId, eraFilter, languageFilter, pageable).map(PoemServiceImpl::toResponse)
+      : repository.findAllByIsDeletedFalse(genreId, eraFilter, languageFilter, pageable);
 
     return PageResponse.of(
       poems.map(PoemResponse::fromSummary).getContent(),
@@ -39,10 +41,59 @@ public class PoemServiceImpl implements PoemService {
     );
   }
 
+  @Override
+  public java.util.List<String> listEras() {
+    return repository.findDistinctEras();
+  }
+
+  @Override
+  public java.util.List<org.oplearn.project.dto.response.FacetItemResponse> facets(String language, String era, Long genreId) {
+    String lang = StringUtils.hasText(language) ? language.trim() : null;
+    String er = StringUtils.hasText(era) ? era.trim() : null;
+
+    // Chọn cấp dựa trên đường dẫn đã cho: chưa có gì → ngôn ngữ; có ngôn ngữ → thời kỳ;
+    // có thời kỳ → thể thơ; có thể thơ → tác giả.
+    java.util.List<PoemRepository.FacetCount> rows;
+    if (lang == null) {
+      rows = repository.facetLanguages();
+    } else if (er == null) {
+      rows = repository.facetEras(lang);
+    } else if (genreId == null) {
+      rows = repository.facetGenres(lang, er);
+    } else {
+      rows = repository.facetAuthors(lang, er, genreId);
+    }
+
+    return rows.stream()
+      .map(r -> new org.oplearn.project.dto.response.FacetItemResponse(
+        r.getId(), r.getLabel(), r.getCount() == null ? 0L : r.getCount()))
+      .toList();
+  }
+
+  @Override
+  public PageResponse<PoemResponse> browse(String language, String era, Long genreId, Long authorId, int size, int page) {
+    Pageable pageable = PageRequest.of(page, size);
+    String lang = StringUtils.hasText(language) ? language.trim() : null;
+    String er = StringUtils.hasText(era) ? era.trim() : null;
+
+    Page<PoemResponse> poems = repository.browse(lang, er, genreId, authorId, pageable)
+      .map(PoemServiceImpl::toResponse);
+
+    return PageResponse.of(
+      poems.map(PoemResponse::fromSummary).getContent(),
+      (int) poems.getTotalElements()
+    );
+  }
+
+  @Override
+  public java.util.List<String> listLanguages() {
+    return repository.findDistinctLanguages();
+  }
+
   private static PoemResponse toResponse(PoemRepository.PoemSearchRow row) {
     return new PoemResponse(
       row.getId(), row.getName(), row.getDescription(), row.getYear(), row.getContent(),
-      row.getTransliteration(), row.getTranslation(), row.getLanguage(),
+      row.getTransliteration(), row.getTranslation(), row.getLanguage(), row.getEra(),
       row.getGenreName(), row.getAuthorName()
     );
   }

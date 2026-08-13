@@ -47,6 +47,9 @@ public class Poem extends BaseEntity {
   @Column(name = "language")
   private String language;
 
+  @Column(name = "era")
+  private String era;
+
   @Column(name = "genre_id")
   private Long genreId;
 
