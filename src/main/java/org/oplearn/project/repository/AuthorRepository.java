@@ -23,12 +23,22 @@ public interface AuthorRepository extends JpaRepository<Author, Long> {
 
   boolean existsByNameAndIsDeletedFalse(String name);
 
-  @Query("""
-
-    select a from Author a
-        where a.isDeleted = false
-               and(lower(a.name) like lower(concat('%' , :keyword , '%')))
-    """)
+  /** Tìm tác giả BỎ DẤU (gõ "nguyen" ra "Nguyễn…"); index idx_authors_name_unaccent_trgm. */
+  @Query(value = """
+      SELECT * FROM authors a
+      WHERE a.is_deleted = false
+        AND f_unaccent(lower(a.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%'
+      ORDER BY
+        (f_unaccent(lower(a.name)) = f_unaccent(lower(:keyword))) DESC,
+        (f_unaccent(lower(a.name)) LIKE f_unaccent(lower(:keyword)) || '%') DESC,
+        a.name
+    """,
+    countQuery = """
+      SELECT count(*) FROM authors a
+      WHERE a.is_deleted = false
+        AND f_unaccent(lower(a.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%'
+    """,
+    nativeQuery = true)
   Page<Author> search(@Param("keyword") String keyword, Pageable pageable);
 
   @Transactional
