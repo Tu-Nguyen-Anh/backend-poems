@@ -71,6 +71,7 @@ public interface AuthorRepository extends JpaRepository<Author, Long> {
               p.transliteration,
               p.translation,
               p.language,
+              p.era,
               g.name,
               a.name
     )

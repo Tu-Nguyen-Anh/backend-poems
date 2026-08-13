@@ -47,6 +47,7 @@ public interface GenreRepository extends JpaRepository<Genre, Long> {
               p.transliteration,
               p.translation,
               p.language,
+              p.era,
               g.name,
               a.name
     )
