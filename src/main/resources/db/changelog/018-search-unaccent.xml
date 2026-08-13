@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <!-- Tìm kiếm bỏ dấu (accent-insensitive): "thủy" khớp "Thuỷ", "Thủy"…
+       Dùng extension unaccent + wrapper IMMUTABLE f_unaccent để (a) dựng lại
+       search_vec theo dạng đã bỏ dấu, (b) đánh index trigram trên tên đã bỏ dấu.
+       Query trong PoemRepository.search cũng bọc f_unaccent 2 phía. -->
+
+  <changeSet id="018-enable-unaccent" author="claude">
+    <sql>CREATE EXTENSION IF NOT EXISTS unaccent</sql>
+  </changeSet>
+
+  <!-- unaccent gốc là STABLE; bọc thành IMMUTABLE (chỉ định dictionary cố định)
+       để dùng được trong cột GENERATED và index biểu thức. -->
+  <changeSet id="018-f-unaccent" author="claude">
+    <sql splitStatements="false"><![CDATA[
+      CREATE OR REPLACE FUNCTION f_unaccent(text) RETURNS text
+        LANGUAGE sql IMMUTABLE PARALLEL SAFE STRICT AS
+      $func$ SELECT public.unaccent('public.unaccent', $1) $func$
+    ]]></sql>
+  </changeSet>
+
+  <!-- Dựng lại search_vec bằng f_unaccent (DROP kéo theo index cũ). -->
+  <changeSet id="018-rebuild-search-vec" author="claude">
+    <sql>ALTER TABLE poems DROP COLUMN IF EXISTS search_vec</sql>
+    <sql>
+      ALTER TABLE poems ADD COLUMN search_vec tsvector
+        GENERATED ALWAYS AS (
+          setweight(to_tsvector('simple', f_unaccent(coalesce(name, ''))), 'A') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(content, ''))), 'C')
+        ) STORED
+    </sql>
+    <sql>CREATE INDEX IF NOT EXISTS idx_poems_search_vec ON poems USING gin (search_vec)</sql>
+  </changeSet>
+
+  <!-- Index trigram trên tên bài / tên tác giả ĐÃ bỏ dấu — cho ILIKE nhanh. -->
+  <changeSet id="018-unaccent-trgm" author="claude">
+    <sql>CREATE INDEX IF NOT EXISTS idx_poems_name_unaccent_trgm ON poems USING gin (f_unaccent(lower(name)) gin_trgm_ops)</sql>
+    <sql>CREATE INDEX IF NOT EXISTS idx_authors_name_unaccent_trgm ON authors USING gin (f_unaccent(lower(name)) gin_trgm_ops)</sql>
+  </changeSet>
+
+</databaseChangeLog>

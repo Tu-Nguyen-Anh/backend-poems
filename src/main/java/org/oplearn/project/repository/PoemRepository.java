@@ -86,16 +86,16 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
           AND (CAST(:era AS text) IS NULL OR p.era = CAST(:era AS text))
           AND (CAST(:language AS text) IS NULL OR p.language = CAST(:language AS text))
           AND (
-            p.search_vec @@ websearch_to_tsquery('simple', :keyword)
-            OR lower(p.name) LIKE '%' || lower(:keyword) || '%'
-            OR lower(a.name) LIKE '%' || lower(:keyword) || '%'
+            p.search_vec @@ websearch_to_tsquery('simple', f_unaccent(:keyword))
+            OR f_unaccent(lower(p.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%'
+            OR f_unaccent(lower(a.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%'
           )
         ORDER BY
-          (lower(p.name) = lower(:keyword)) DESC,
-          (lower(p.name) LIKE lower(:keyword) || '%') DESC,
-          (lower(p.name) LIKE '%' || lower(:keyword) || '%') DESC,
-          (lower(a.name) LIKE '%' || lower(:keyword) || '%') DESC,
-          ts_rank(p.search_vec, websearch_to_tsquery('simple', :keyword)) DESC,
+          (f_unaccent(lower(p.name)) = f_unaccent(lower(:keyword))) DESC,
+          (f_unaccent(lower(p.name)) LIKE f_unaccent(lower(:keyword)) || '%') DESC,
+          (f_unaccent(lower(p.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%') DESC,
+          (f_unaccent(lower(a.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%') DESC,
+          ts_rank(p.search_vec, websearch_to_tsquery('simple', f_unaccent(:keyword))) DESC,
           p.id
     """,
     countQuery = """
@@ -107,9 +107,9 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
           AND (CAST(:era AS text) IS NULL OR p.era = CAST(:era AS text))
           AND (CAST(:language AS text) IS NULL OR p.language = CAST(:language AS text))
           AND (
-            p.search_vec @@ websearch_to_tsquery('simple', :keyword)
-            OR lower(p.name) LIKE '%' || lower(:keyword) || '%'
-            OR lower(a.name) LIKE '%' || lower(:keyword) || '%'
+            p.search_vec @@ websearch_to_tsquery('simple', f_unaccent(:keyword))
+            OR f_unaccent(lower(p.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%'
+            OR f_unaccent(lower(a.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%'
           )
     """,
     nativeQuery = true)
