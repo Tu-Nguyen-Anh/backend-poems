@@ -21,17 +21,18 @@ public class PoemResponse {
   private String transliteration;
   private String translation;
   private String language;
+  private String era;
   private String genreName;
   private String authorName;
 
-  // Bổ sung ở trang chi tiết (không nằm trong projection JPQL 10 tham số)
+  // Bổ sung ở trang chi tiết (không nằm trong projection JPQL 11 tham số)
   private String meaning;
   private List<PoemTranslationResponse> translations;
 
-  /** Constructor dùng cho projection JPQL — GIỮ đúng 10 tham số, thứ tự cố định. */
+  /** Constructor dùng cho projection JPQL — GIỮ đúng 11 tham số, thứ tự cố định. */
   public PoemResponse(
     Long id, String name, String description, Integer year, String content,
-    String transliteration, String translation, String language,
+    String transliteration, String translation, String language, String era,
     String genreName, String authorName
   ) {
     this.id = id;
@@ -42,6 +43,7 @@ public class PoemResponse {
     this.transliteration = transliteration;
     this.translation = translation;
     this.language = language;
+    this.era = era;
     this.genreName = genreName;
     this.authorName = authorName;
   }
@@ -63,6 +65,7 @@ public class PoemResponse {
       poem.getTransliteration(),
       poem.getTranslation(),
       poem.getLanguage(),
+      poem.getEra(),
       genreName,
       authorName
     );

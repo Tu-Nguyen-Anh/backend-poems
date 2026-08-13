@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <!-- Thêm chiều phân loại "thời kỳ" (era) — crawl thivien có sẵn trường này
+       (Hiện đại, Trung đại, Nguyễn, Thịnh Đường…) nhưng importer cũ bỏ qua.
+       Cột text + index để lọc; language đã có sẵn nên chỉ cần index. -->
+  <changeSet id="017-poems-add-era" author="claude">
+    <sql>ALTER TABLE poems ADD COLUMN IF NOT EXISTS era varchar(100)</sql>
+  </changeSet>
+
+  <changeSet id="017-poems-era-index" author="claude">
+    <sql>CREATE INDEX IF NOT EXISTS idx_poems_era ON poems(era) WHERE is_deleted = false</sql>
+  </changeSet>
+
+  <changeSet id="017-poems-language-index" author="claude">
+    <sql>CREATE INDEX IF NOT EXISTS idx_poems_language ON poems(language) WHERE is_deleted = false</sql>
+  </changeSet>
+
+</databaseChangeLog>

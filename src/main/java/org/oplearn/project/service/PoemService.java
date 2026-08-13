@@ -5,7 +5,15 @@ import org.oplearn.project.dto.response.PoemResponse;
 import org.oplearn.project.entity.Poem;
 
 public interface PoemService {
-  PageResponse<PoemResponse> list(String keyword, Long genreId, int size, int page);
+  PageResponse<PoemResponse> list(String keyword, Long genreId, String era, String language, int size, int page);
+
+  java.util.List<String> listEras();
+
+  java.util.List<String> listLanguages();
+
+  java.util.List<org.oplearn.project.dto.response.FacetItemResponse> facets(String language, String era, Long genreId);
+
+  PageResponse<PoemResponse> browse(String language, String era, Long genreId, Long authorId, int size, int page);
 
   PoemResponse detail(Long id);
 

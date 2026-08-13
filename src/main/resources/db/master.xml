@@ -21,5 +21,6 @@
     <include file="db/changelog/014-add-source-url.xml"/>
     <include file="db/changelog/015-add-poem-fulltext.xml"/>
     <include file="db/changelog/016-add-homepage-indexes.xml"/>
+    <include file="db/changelog/017-add-poem-era.xml"/>
 
 </databaseChangeLog>

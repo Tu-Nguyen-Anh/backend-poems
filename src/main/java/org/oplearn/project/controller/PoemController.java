@@ -27,11 +27,50 @@ public class PoemController {
   public ResponseGeneral<PageResponse<PoemResponse>> list(
     @RequestParam(name = PARAM_KEYWORD, required = false) String keyword,
     @RequestParam(name = "genreId", required = false) Long genreId,
+    @RequestParam(name = "era", required = false) String era,
+    @RequestParam(name = "language", required = false) String language,
     @RequestParam(name = PARAM_SIZE, defaultValue = SIZE_DEFAULT) int size,
     @RequestParam(name = PARAM_PAGE, defaultValue = PAGE_DEFAULT) int page
   ) {
-    log.info("(list) keyword: {}, genreId: {}, size: {}, page: {}", keyword, genreId, size, page);
-    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.list(keyword, genreId, size, page));
+    log.info("(list) keyword: {}, genreId: {}, era: {}, language: {}, size: {}, page: {}", keyword, genreId, era, language, size, page);
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.list(keyword, genreId, era, language, size, page));
+  }
+
+  @GetMapping("/eras")
+  public ResponseGeneral<java.util.List<String>> listEras() {
+    log.info("(list eras)");
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.listEras());
+  }
+
+  @GetMapping("/languages")
+  public ResponseGeneral<java.util.List<String>> listLanguages() {
+    log.info("(list languages)");
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.listLanguages());
+  }
+
+  /** Nhánh con của cây duyệt phân cấp (Ngôn ngữ → Thời kỳ → Thể thơ → Tác giả). */
+  @GetMapping("/facets")
+  public ResponseGeneral<java.util.List<org.oplearn.project.dto.response.FacetItemResponse>> facets(
+    @RequestParam(name = "language", required = false) String language,
+    @RequestParam(name = "era", required = false) String era,
+    @RequestParam(name = "genreId", required = false) Long genreId
+  ) {
+    log.info("(facets) language: {}, era: {}, genreId: {}", language, era, genreId);
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.facets(language, era, genreId));
+  }
+
+  /** Danh sách bài ở cấp lá theo đường dẫn duyệt (lọc theo ngôn ngữ/thời kỳ/thể thơ/tác giả). */
+  @GetMapping("/browse")
+  public ResponseGeneral<PageResponse<PoemResponse>> browse(
+    @RequestParam(name = "language", required = false) String language,
+    @RequestParam(name = "era", required = false) String era,
+    @RequestParam(name = "genreId", required = false) Long genreId,
+    @RequestParam(name = "authorId", required = false) Long authorId,
+    @RequestParam(name = PARAM_SIZE, defaultValue = SIZE_DEFAULT) int size,
+    @RequestParam(name = PARAM_PAGE, defaultValue = PAGE_DEFAULT) int page
+  ) {
+    log.info("(browse) language: {}, era: {}, genreId: {}, authorId: {}, size: {}, page: {}", language, era, genreId, authorId, size, page);
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.browse(language, era, genreId, authorId, size, page));
   }
 
   @GetMapping("/{id}")
