@@ -221,6 +221,9 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
         AND (CAST(:era AS text) IS NULL OR COALESCE(NULLIF(btrim(p.era), ''), '(Chưa phân loại)') = CAST(:era AS text))
         AND (CAST(:genreId AS bigint) IS NULL OR COALESCE(p.genre_id, -1) = CAST(:genreId AS bigint))
         AND (CAST(:authorId AS bigint) IS NULL OR p.author_id = CAST(:authorId AS bigint))
+        AND (CAST(:keyword AS text) IS NULL
+             OR p.search_vec @@ websearch_to_tsquery('simple', f_unaccent(CAST(:keyword AS text)))
+             OR f_unaccent(lower(p.name)) LIKE '%' || f_unaccent(lower(CAST(:keyword AS text))) || '%')
       ORDER BY lower(p.name), p.id
     """,
     countQuery = """
@@ -231,6 +234,9 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
         AND (CAST(:era AS text) IS NULL OR COALESCE(NULLIF(btrim(p.era), ''), '(Chưa phân loại)') = CAST(:era AS text))
         AND (CAST(:genreId AS bigint) IS NULL OR COALESCE(p.genre_id, -1) = CAST(:genreId AS bigint))
         AND (CAST(:authorId AS bigint) IS NULL OR p.author_id = CAST(:authorId AS bigint))
+        AND (CAST(:keyword AS text) IS NULL
+             OR p.search_vec @@ websearch_to_tsquery('simple', f_unaccent(CAST(:keyword AS text)))
+             OR f_unaccent(lower(p.name)) LIKE '%' || f_unaccent(lower(CAST(:keyword AS text))) || '%')
     """,
     nativeQuery = true)
   Page<PoemSearchRow> browse(
@@ -238,6 +244,7 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
     @Param("era") String era,
     @Param("genreId") Long genreId,
     @Param("authorId") Long authorId,
+    @Param("keyword") String keyword,
     Pageable pageable);
 
   @Modifying

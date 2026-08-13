@@ -71,12 +71,13 @@ public class PoemServiceImpl implements PoemService {
   }
 
   @Override
-  public PageResponse<PoemResponse> browse(String language, String era, Long genreId, Long authorId, int size, int page) {
+  public PageResponse<PoemResponse> browse(String language, String era, Long genreId, Long authorId, String keyword, int size, int page) {
     Pageable pageable = PageRequest.of(page, size);
     String lang = StringUtils.hasText(language) ? language.trim() : null;
     String er = StringUtils.hasText(era) ? era.trim() : null;
+    String kw = StringUtils.hasText(keyword) ? keyword.trim() : null;
 
-    Page<PoemResponse> poems = repository.browse(lang, er, genreId, authorId, pageable)
+    Page<PoemResponse> poems = repository.browse(lang, er, genreId, authorId, kw, pageable)
       .map(PoemServiceImpl::toResponse);
 
     return PageResponse.of(

@@ -68,12 +68,13 @@ public class PoemController {
     @RequestParam(name = "era", required = false) String era,
     @RequestParam(name = "genreId", required = false) Long genreId,
     @RequestParam(name = "authorId", required = false) Long authorId,
+    @RequestParam(name = PARAM_KEYWORD, required = false) String keyword,
     @RequestParam(name = PARAM_SIZE, defaultValue = SIZE_DEFAULT) int size,
     @RequestParam(name = PARAM_PAGE, defaultValue = PAGE_DEFAULT) int page
   ) {
     size = Math.min(size, MAX_PAGE_SIZE);
-    log.info("(browse) language: {}, era: {}, genreId: {}, authorId: {}, size: {}, page: {}", language, era, genreId, authorId, size, page);
-    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.browse(language, era, genreId, authorId, size, page));
+    log.info("(browse) language: {}, era: {}, genreId: {}, authorId: {}, keyword: {}, size: {}, page: {}", language, era, genreId, authorId, keyword, size, page);
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.browse(language, era, genreId, authorId, keyword, size, page));
   }
 
   @GetMapping("/{id}")
