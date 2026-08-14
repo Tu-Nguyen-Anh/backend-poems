@@ -61,6 +61,7 @@ public class CommentController {
   ) {
     log.info("(list by user) comment user id: {}", userId);
 
+    size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE , facade.getCommentsByUserId(userId, size, page));
   }
 
@@ -72,6 +73,7 @@ public class CommentController {
   ) {
     log.info("(list by poem) comment poem id: {}", poemId);
 
+    size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE , service.getCommentsByPoemId(poemId, size, page));
   }
 }

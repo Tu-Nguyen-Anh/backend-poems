@@ -18,6 +18,21 @@ spring:
 
 server:
   port: ${PORT:8089}
+  # Chống HTTP slow attack (Slowloris) + giới hạn tài nguyên/payload.
+  # Lưu ý: chống DDoS ồ ạt phải làm chính ở lớp Cloudflare/nginx (rate limit,
+  # limit_conn, client_header/body_timeout) — đây là lớp phòng thủ sâu ở app.
+  tomcat:
+    connection-timeout: ${TOMCAT_CONN_TIMEOUT:8s}   # tối đa để nhận xong request-line + headers
+    keep-alive-timeout: 15s
+    max-keep-alive-requests: 100
+    max-connections: ${TOMCAT_MAX_CONN:8192}
+    accept-count: 100
+    threads:
+      max: ${TOMCAT_MAX_THREADS:200}
+      min-spare: 10
+    max-swallow-size: 2MB
+    max-http-form-post-size: 1MB
+  max-http-request-header-size: 16KB
 
 app:
   seo:

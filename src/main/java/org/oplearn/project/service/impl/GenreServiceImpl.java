@@ -76,7 +76,9 @@ public class GenreServiceImpl implements GenreService {
   public PageResponse<GenreResponse> list(String keyword, int size, int page, boolean isAll) {
     log.info("(service) filter genre with keyword: {}, size: {}, page: {}, isAll: {}", keyword, size, page, isAll);
 
-    Pageable pageable = isAll ? Pageable.unpaged() : PageRequest.of(page, size);
+    Pageable pageable = isAll
+      ? PageRequest.of(0, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_ALL_SIZE)
+      : PageRequest.of(page, size);
 
     Page<Genre> genre = StringUtils.hasText(keyword)
       ? repository.search(keyword , pageable)

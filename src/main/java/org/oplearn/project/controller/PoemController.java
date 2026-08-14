@@ -124,4 +124,11 @@ public class PoemController {
 
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.random());
   }
+
+  @GetMapping("/stats")
+  public ResponseGeneral<org.oplearn.project.dto.response.StatsResponse> stats() {
+    log.info("(stats) poem library overview");
+
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.getStats());
+  }
 }

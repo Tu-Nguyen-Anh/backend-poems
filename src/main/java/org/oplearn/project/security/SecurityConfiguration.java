@@ -55,6 +55,11 @@ public class SecurityConfiguration {
           "/api/v1/genres/**",
           "/api/v1/comments/**",
           "/api/v1/replies/**").permitAll()
+        // Chỉ ADMIN được liệt kê toàn bộ user / feedback + xem chi tiết theo id
+        // (chống IDOR + lộ dữ liệu). Profile chính chủ đi qua GET /users/{id} có
+        // kiểm owner ở service; feedback của user qua /feedbacks/user/{id}.
+        .requestMatchers(HttpMethod.GET, "/api/v1/users").hasRole(ROLE_ADMIN)
+        .requestMatchers(HttpMethod.GET, "/api/v1/feedbacks", "/api/v1/feedbacks/*").hasRole(ROLE_ADMIN)
         .requestMatchers(MATCHER_ADMIN_API).hasRole(ROLE_ADMIN)
         .requestMatchers(HttpMethod.POST, "/api/v1/authors/**", "/api/v1/genres/**", "/api/v1/poems/**", "/api/v1/users/**").hasRole("ADMIN")
         .requestMatchers(HttpMethod.PUT, "/api/v1/authors/**", "/api/v1/genres/**", "/api/v1/poems/**" , "/api/v1/feedbacks/status/**").hasRole("ADMIN")
