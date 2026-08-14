@@ -104,9 +104,12 @@ public class PoemServiceImpl implements PoemService {
     PoemResponse response = repository.findByIdAndReturnResponse(id)
       .orElseThrow(PoemNotFoundException::new);
 
-    // Dịch nghĩa (văn xuôi) — lấy từ entity vì projection không có
+    // Dịch nghĩa (văn xuôi) + authorId — lấy từ entity vì projection không có
     repository.findByIdAndIsDeletedFalse(id)
-      .ifPresent(poem -> response.setMeaning(poem.getMeaning()));
+      .ifPresent(poem -> {
+        response.setMeaning(poem.getMeaning());
+        response.setAuthorId(poem.getAuthorId());
+      });
 
     // Nhiều bản dịch thơ
     response.setTranslations(
@@ -152,15 +155,30 @@ public class PoemServiceImpl implements PoemService {
     return repository.save(existingPoem);
   }
 
+  // Tổng số bài (cho banner trang chủ) đổi rất chậm nhưng count(*) là seq scan
+  // toàn bảng — cache lại, làm mới mỗi 60s thay vì đếm mỗi lần tải trang chủ.
+  private static final long ACTIVE_COUNT_TTL_MS = 60_000;
+  private volatile long cachedActiveCount = -1;
+  private volatile long cachedActiveCountAt = 0;
+
+  private long activeCount() {
+    long now = System.currentTimeMillis();
+    if (cachedActiveCount < 0 || now - cachedActiveCountAt > ACTIVE_COUNT_TTL_MS) {
+      cachedActiveCount = repository.countActive();
+      cachedActiveCountAt = now;
+    }
+    return cachedActiveCount;
+  }
+
   public PageResponse<PoemResponse> listPoemLatest(int size, int page) {
     Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-    Page<PoemResponse> poems = repository.findLatest(pageable);
+    // Chỉ nạp đúng `size` bài mới nhất (index scan trên created_at) — không count/join thừa.
+    java.util.List<PoemResponse> poems = repository.findLatest(pageable).stream()
+      .map(PoemResponse::fromSummary)
+      .toList();
 
-    return PageResponse.of(
-      poems.map(PoemResponse::fromSummary).getContent(),
-      (int) poems.getTotalElements()
-    );
+    return PageResponse.of(poems, (int) activeCount());
   }
 
   public PageResponse<PoemResponse> random() {

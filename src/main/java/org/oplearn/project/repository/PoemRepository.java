@@ -275,7 +275,13 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
         LEFT JOIN Genre g ON p.genreId = g.id
         WHERE p.isDeleted = false
     """)
-  Page<PoemResponse> findLatest(Pageable pageable);
+  // List (không phải Page): Spring áp LIMIT/OFFSET + sort từ Pageable nhưng KHÔNG
+  // chạy count(*) — count toàn bảng là seq scan, tốn nhất trên trang chủ (>100k dòng).
+  java.util.List<PoemResponse> findLatest(Pageable pageable);
+
+  /** Đếm bài còn hiển thị. Gọi qua cache TTL ở service, không đếm mỗi request. */
+  @Query("SELECT count(p) FROM Poem p WHERE p.isDeleted = false")
+  long countActive();
 
   /** Bốc id ngẫu nhiên trước (chỉ sort cột id, không kéo content) — rẻ hơn
    *  nhiều so với ORDER BY random() trên cả dòng có nội dung bài thơ. */

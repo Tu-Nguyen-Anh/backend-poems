@@ -21,6 +21,17 @@ public interface AuthorRepository extends JpaRepository<Author, Long> {
 
   Page<Author> findAllByIsDeletedFalse(Pageable pageable);
 
+  /** Danh sách tác giả: ưu tiên người CÓ ảnh (avatar) hoặc tiểu sử (bio) lên đầu,
+   *  sau đó theo tên. Trả entity để giữ đủ avatar/bio khi map sang response. */
+  @Query("""
+      SELECT a FROM Author a
+      WHERE a.isDeleted = false
+      ORDER BY
+        CASE WHEN (a.avatarUrl IS NOT NULL OR a.avatarLocal IS NOT NULL OR a.bio IS NOT NULL) THEN 0 ELSE 1 END,
+        a.name
+    """)
+  Page<Author> findAllOrderByHasMedia(Pageable pageable);
+
   boolean existsByNameAndIsDeletedFalse(String name);
 
   /** Tìm tác giả BỎ DẤU (gõ "nguyen" ra "Nguyễn…"); index idx_authors_name_unaccent_trgm. */
@@ -51,12 +62,12 @@ public interface AuthorRepository extends JpaRepository<Author, Long> {
 
   @Query("""
     SELECT new org.oplearn.project.dto.response.AuthorResponse(
-      a.id, a.name, a.birthYear, a.achievement, a.hometown, COUNT(p.id)
+      a.id, a.name, a.birthYear, a.achievement, a.hometown, COUNT(p.id), a.avatarUrl, a.avatarLocal
     )
     FROM Author a
     LEFT JOIN Poem p ON p.authorId = a.id AND p.isDeleted = false
     WHERE a.isDeleted = false
-    GROUP BY a.id, a.name, a.birthYear, a.achievement, a.hometown
+    GROUP BY a.id, a.name, a.birthYear, a.achievement, a.hometown, a.avatarUrl, a.avatarLocal
     ORDER BY COUNT(p.id) DESC, a.id
     """)
   Page<org.oplearn.project.dto.response.AuthorResponse> findTopByPoemCount(Pageable pageable);

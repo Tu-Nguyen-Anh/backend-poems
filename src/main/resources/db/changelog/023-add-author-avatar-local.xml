@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <!-- Ảnh chân dung tự crawl về, lưu trên object storage RustFS (bucket daithihao).
+       avatar_local = key kiểu "<uuid>.<ext>"; link ảnh = <RUSTFS_PUBLIC_URL>/daithihao/<avatar_local>.
+       avatar_url (URL gốc thivien) giữ nguyên, không đụng tới. -->
+  <changeSet id="023-authors-avatar-local" author="claude">
+    <sql>ALTER TABLE authors ADD COLUMN IF NOT EXISTS avatar_local VARCHAR(80)</sql>
+  </changeSet>
+
+</databaseChangeLog>
