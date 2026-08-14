@@ -62,6 +62,7 @@ public class AuthorController {
     @RequestParam(name = PARAM_PAGE, defaultValue = PAGE_DEFAULT) int page,
     @RequestParam(name = PARAM_ALL, defaultValue = IS_ALL_DEFAULT) boolean isAll
   ) {
+    size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
     log.info("(list) keyword: {}, size: {}, page: {}, isAll: {}", keyword, size, page, isAll);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.list(keyword, size, page, isAll));
   }
@@ -71,6 +72,7 @@ public class AuthorController {
     @RequestParam(name = PARAM_SIZE, defaultValue = SIZE_DEFAULT) int size,
     @RequestParam(name = PARAM_PAGE, defaultValue = PAGE_DEFAULT) int page
   ) {
+    size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
     log.info("(listTopByPoemCount) size: {}, page: {}", size, page);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.listTopByPoemCount(size, page));
   }
@@ -81,6 +83,7 @@ public class AuthorController {
     @RequestParam(name = PARAM_SIZE, defaultValue = SIZE_DEFAULT) int size,
     @RequestParam(name = PARAM_PAGE, defaultValue = PAGE_DEFAULT) int page
   ) {
+    size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
     log.info("(list) authorId: {}, size: {}, page: {}", authorId, size, page);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.listPoemByAuthorId(authorId, size, page));
   }

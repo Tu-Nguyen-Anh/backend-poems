@@ -22,5 +22,11 @@
     <include file="db/changelog/015-add-poem-fulltext.xml"/>
     <include file="db/changelog/016-add-homepage-indexes.xml"/>
     <include file="db/changelog/017-add-poem-era.xml"/>
+    <include file="db/changelog/018-search-unaccent.xml"/>
+    <include file="db/changelog/019-search-author-in-vec.xml"/>
+    <include file="db/changelog/020-add-author-avatar-bio.xml"/>
+    <include file="db/changelog/021-create-table-favorites.xml"/>
+    <include file="db/changelog/022-create-table-poem-highlights.xml"/>
+    <include file="db/changelog/023-add-author-avatar-local.xml"/>
 
 </databaseChangeLog>

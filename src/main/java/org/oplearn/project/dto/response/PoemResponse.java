@@ -24,6 +24,7 @@ public class PoemResponse {
   private String era;
   private String genreName;
   private String authorName;
+  private Long authorId;
 
   // Bổ sung ở trang chi tiết (không nằm trong projection JPQL 11 tham số)
   private String meaning;

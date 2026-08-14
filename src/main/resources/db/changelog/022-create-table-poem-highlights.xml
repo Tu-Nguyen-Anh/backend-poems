@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <!-- Highlight + ghi chú của người dùng trên 1 đoạn của bài thơ.
+       start_offset/end_offset là vị trí ký tự trong poems.content (nội dung gốc),
+       selected_text lưu lại đoạn được tô (để đối chiếu nếu nội dung bài thay đổi). -->
+  <changeSet id="022-create-poem-highlights" author="claude">
+    <createTable tableName="poem_highlights">
+      <column name="id" type="BIGSERIAL">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+
+      <column name="user_id" type="BIGINT">
+        <constraints nullable="false"
+                     foreignKeyName="fk_highlights_user"
+                     references="users(id)"/>
+      </column>
+
+      <column name="poem_id" type="BIGINT">
+        <constraints nullable="false"
+                     foreignKeyName="fk_highlights_poem"
+                     references="poems(id)"/>
+      </column>
+
+      <column name="start_offset" type="INT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="end_offset" type="INT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="selected_text" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="note" type="TEXT"/>
+
+      <column name="is_deleted" type="BOOLEAN" defaultValueBoolean="false"/>
+      <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP WITH TIME ZONE"/>
+    </createTable>
+
+    <createIndex tableName="poem_highlights" indexName="idx_highlights_user_poem">
+      <column name="user_id"/>
+      <column name="poem_id"/>
+    </createIndex>
+  </changeSet>
+
+</databaseChangeLog>

@@ -13,7 +13,7 @@ public interface PoemService {
 
   java.util.List<org.oplearn.project.dto.response.FacetItemResponse> facets(String language, String era, Long genreId);
 
-  PageResponse<PoemResponse> browse(String language, String era, Long genreId, Long authorId, int size, int page);
+  PageResponse<PoemResponse> browse(String language, String era, Long genreId, Long authorId, String keyword, int size, int page);
 
   PoemResponse detail(Long id);
 

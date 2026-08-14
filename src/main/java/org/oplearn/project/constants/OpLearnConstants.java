@@ -65,7 +65,8 @@ public class OpLearnConstants {
           "/actuator/health",
           "/actuator/info",
           "/sitemap.xml",
-          "/sitemaps/**"
+          "/sitemaps/**",
+          "/prerender/**"
     };
     public static final String[] MATCHER_AUTH_PUBLIC_API = {
       "/api/v1/auth/login",
@@ -82,5 +83,7 @@ public class OpLearnConstants {
     public static final String SIZE_DEFAULT = "10";
     public static final String PAGE_DEFAULT = "0";
     public static final String IS_ALL_DEFAULT = "false";
+    /** Trần page size cho mọi API list/filter — chặn fetch quá lớn gây lag. */
+    public static final int MAX_PAGE_SIZE = 200;
   }
 }

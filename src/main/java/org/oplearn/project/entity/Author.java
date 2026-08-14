@@ -31,4 +31,15 @@ public class Author extends BaseEntity {
 
   @Column(name = "achievement")
   private String achievement;
+
+  @Column(name = "avatar_url", length = 500)
+  private String avatarUrl;
+
+  /** Key ảnh tự crawl trên RustFS (bucket daithihao), dạng "<uuid>.<ext>".
+   *  Link đầy đủ = <RUSTFS_PUBLIC_URL>/daithihao/<avatarLocal>. avatarUrl (gốc thivien) giữ nguyên. */
+  @Column(name = "avatar_local", length = 80)
+  private String avatarLocal;
+
+  @Column(name = "bio", columnDefinition = "TEXT")
+  private String bio;
 }

@@ -58,6 +58,7 @@ public class GenreController {
     @RequestParam(name = PARAM_PAGE, defaultValue = PAGE_DEFAULT) int page,
     @RequestParam(name = PARAM_ALL, defaultValue = IS_ALL_DEFAULT) boolean isAll
   ) {
+    size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
     log.info("(list) keyword: {}, size: {}, page: {}, isAll: {}", keyword, size, page, isAll);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.list(keyword, size, page, isAll));
   }
@@ -68,6 +69,7 @@ public class GenreController {
     @RequestParam(name = PARAM_SIZE, defaultValue = SIZE_DEFAULT) int size,
     @RequestParam(name = PARAM_PAGE, defaultValue = PAGE_DEFAULT) int page
   ) {
+    size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
     log.info("(list) genreId: {}, size: {}, page: {}", genreId, size, page);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.listPoemByGenreId(genreId, size, page));
   }

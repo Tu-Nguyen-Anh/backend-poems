@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <!-- Ảnh chân dung + tiểu sử tác giả (crawl từ thivien.net). avatar_url là URL
+       tuyệt đối tới ảnh trên thivien; bio là văn bản giới thiệu (giữ xuống dòng). -->
+  <changeSet id="020-authors-avatar-bio" author="claude">
+    <sql>ALTER TABLE authors ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500)</sql>
+    <sql>ALTER TABLE authors ADD COLUMN IF NOT EXISTS bio TEXT</sql>
+  </changeSet>
+
+</databaseChangeLog>
