@@ -21,16 +21,25 @@ public interface AuthorRepository extends JpaRepository<Author, Long> {
 
   Page<Author> findAllByIsDeletedFalse(Pageable pageable);
 
-  /** Danh sách tác giả: ưu tiên người CÓ ảnh (avatar) hoặc tiểu sử (bio) lên đầu,
-   *  sau đó theo tên. Trả entity để giữ đủ avatar/bio khi map sang response. */
-  @Query("""
-      SELECT a FROM Author a
-      WHERE a.isDeleted = false
+  /** Danh sách tác giả (mặc định): xếp theo QUỐC GIA rồi SỐ TÁC PHẨM giảm dần.
+   *  Ưu tiên Việt Nam (country_id=2) → Trung Quốc (country_id=3) → các nước khác;
+   *  trong mỗi nhóm, tác giả nhiều bài đứng trước. Dùng native để GROUP BY + COUNT
+   *  đếm số bài trực tiếp mà vẫn trả về entity đầy đủ (avatar/bio/country). */
+  @Query(value = """
+      SELECT a.* FROM authors a
+      LEFT JOIN poems p ON p.author_id = a.id AND p.is_deleted = false
+      WHERE a.is_deleted = false
+      GROUP BY a.id
       ORDER BY
-        CASE WHEN (a.avatarUrl IS NOT NULL OR a.avatarLocal IS NOT NULL OR a.bio IS NOT NULL) THEN 0 ELSE 1 END,
+        CASE a.country_id WHEN 2 THEN 0 WHEN 3 THEN 1 ELSE 2 END,
+        COUNT(p.id) DESC,
         a.name
-    """)
-  Page<Author> findAllOrderByHasMedia(Pageable pageable);
+    """,
+    countQuery = """
+      SELECT count(*) FROM authors a WHERE a.is_deleted = false
+    """,
+    nativeQuery = true)
+  Page<Author> findAllOrderByCountryAndPoemCount(Pageable pageable);
 
   boolean existsByNameAndIsDeletedFalse(String name);
 

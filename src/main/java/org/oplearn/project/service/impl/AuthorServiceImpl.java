@@ -84,7 +84,7 @@ public class AuthorServiceImpl implements AuthorService {
 
     Page<Author> authors = StringUtils.hasText(keyword)
       ? repository.search(keyword, pageable)
-      : repository.findAllOrderByHasMedia(pageable);
+      : repository.findAllOrderByCountryAndPoemCount(pageable);
 
     return PageResponse.of(
       authors.map(AuthorResponse::from).getContent(),

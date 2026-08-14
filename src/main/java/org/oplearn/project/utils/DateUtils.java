@@ -9,8 +9,4 @@ public class DateUtils {
   public static String getCurrentDateString() {
     return Instant.now().toString();
   }
-
-  public static long currentTimeMillis() {
-    return System.currentTimeMillis();
-  }
 }

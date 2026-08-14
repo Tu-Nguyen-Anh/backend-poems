@@ -35,7 +35,6 @@ public class AuthServiceImpl implements AuthService {
   private final TokenRedisRepository tokenRedisRepository;
   private final JwtTokenProvider jwtTokenProvider;
   private final PasswordEncoder passwordEncoder;
-  private final UserRepository repository;
 
   @Override
   public TokenResponse login(LoginRequest request) {
@@ -49,11 +48,11 @@ public class AuthServiceImpl implements AuthService {
   }
 
   public TokenResponse register(RegisterRequest request) {
-    if (repository.existsByUsernameAndIsDeletedFalse(request.getUsername())) {
+    if (userRepository.existsByUsernameAndIsDeletedFalse(request.getUsername())) {
       throw new UsernameAlreadyExistedException();
     }
     if (StringUtils.hasText(request.getEmail())
-      && repository.existsByEmailAndIsDeletedFalse(request.getEmail())) {
+      && userRepository.existsByEmailAndIsDeletedFalse(request.getEmail())) {
       throw new EmailAlreadyExistedException();
     }
 
@@ -65,7 +64,7 @@ public class AuthServiceImpl implements AuthService {
       .role(UserRole.USER)
       .build();
 
-    repository.save(user);
+    userRepository.save(user);
 
     return issueTokens(user);
   }

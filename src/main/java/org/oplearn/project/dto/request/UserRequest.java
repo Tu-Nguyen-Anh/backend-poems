@@ -23,9 +23,7 @@ public class UserRequest {
   @Size(min = 8, message = "user.password.min_length")
   private String password;
 
-private String phoneNumber;
-
-  private String name;
+  private String phoneNumber;
 
   @Email(message = "user.email.invalid")
   private String email;

@@ -3,7 +3,6 @@ package org.oplearn.project.security;
 import lombok.RequiredArgsConstructor;
 import org.oplearn.project.entity.User;
 import org.oplearn.project.repository.UserRepository;
-import org.oplearn.project.service.UserService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
