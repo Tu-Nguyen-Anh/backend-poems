@@ -70,8 +70,10 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
    * Full-text search có xếp hạng (thay LIKE toàn cục): khớp qua tsvector
    * (tiêu đề trọng số A, nội dung C — index GIN idx_poems_search_vec) hoặc
    * tên bài/tên tác giả chứa cụm từ (index trigram). Thứ tự ưu tiên:
-   * tiêu đề khớp nguyên → tiêu đề bắt đầu bằng → tiêu đề chứa → tác giả chứa
-   * → độ liên quan nội dung (ts_rank).
+   * tiêu đề khớp nguyên → tiêu đề bắt đầu bằng → tiêu đề chứa →
+   * CÂU LIỀN MẠCH trong bài (phraseto_tsquery: các từ đứng liền kề — để dán
+   * nguyên một câu thơ thì đúng bài chứa câu đó nổi lên đầu, thay vì mọi bài
+   * tình cờ chứa đủ các từ đó rải rác) → độ liên quan nội dung (ts_rank).
    */
   @Query(value = """
         SELECT p.id AS "id", p.name AS "name", p.description AS "description",
@@ -93,6 +95,7 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
           (f_unaccent(lower(p.name)) = f_unaccent(lower(:keyword))) DESC,
           (f_unaccent(lower(p.name)) LIKE f_unaccent(lower(:keyword)) || '%') DESC,
           (f_unaccent(lower(p.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%') DESC,
+          (p.search_vec @@ phraseto_tsquery('simple', f_unaccent(:keyword))) DESC,
           ts_rank(p.search_vec, websearch_to_tsquery('simple', f_unaccent(:keyword))) DESC,
           p.id
     """,
@@ -224,7 +227,13 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
         AND (CAST(:keyword AS text) IS NULL
              OR p.search_vec @@ websearch_to_tsquery('simple', f_unaccent(CAST(:keyword AS text)))
              OR f_unaccent(lower(p.name)) LIKE '%' || f_unaccent(lower(CAST(:keyword AS text))) || '%')
-      ORDER BY lower(p.name), p.id
+      ORDER BY
+        (CAST(:keyword AS text) IS NOT NULL AND f_unaccent(lower(p.name)) = f_unaccent(lower(CAST(:keyword AS text)))) DESC,
+        (CAST(:keyword AS text) IS NOT NULL AND f_unaccent(lower(p.name)) LIKE f_unaccent(lower(CAST(:keyword AS text))) || '%') DESC,
+        (CAST(:keyword AS text) IS NOT NULL AND f_unaccent(lower(p.name)) LIKE '%' || f_unaccent(lower(CAST(:keyword AS text))) || '%') DESC,
+        (CAST(:keyword AS text) IS NOT NULL AND p.search_vec @@ phraseto_tsquery('simple', f_unaccent(CAST(:keyword AS text)))) DESC,
+        ts_rank(p.search_vec, websearch_to_tsquery('simple', f_unaccent(COALESCE(CAST(:keyword AS text), '')))) DESC,
+        lower(p.name), p.id
     """,
     countQuery = """
       SELECT count(*)

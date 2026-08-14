@@ -18,9 +18,12 @@ public class AuthorResponse {
   /** Key ảnh tự crawl trên RustFS (dạng "<uuid>.<ext>"); client build link = <RUSTFS_PUBLIC_URL>/daithihao/<avatarLocal>. */
   String avatarLocal;
   String bio;
+  /** Quốc gia tác giả (crawl thivien): tên nước + id phân loại thivien. */
+  String country;
+  Integer countryId;
   Long poemCount;
 
-  /** 6 tham số — GIỮ cho JPQL projection findTopByPoemCount (thứ tự cố định). */
+  /** Constructor lõi 6 tham số — các constructor khác đều gọi lại constructor này. */
   public AuthorResponse(Long id, String name, Integer birthYear, String achievement, String hometown, Long poemCount) {
     this.id = id;
     this.name = name;
@@ -53,6 +56,8 @@ public class AuthorResponse {
     res.setAvatarUrl(author.getAvatarUrl());
     res.setAvatarLocal(author.getAvatarLocal());
     res.setBio(author.getBio());
+    res.setCountry(author.getCountry());
+    res.setCountryId(author.getCountryId());
     return res;
   }
 }

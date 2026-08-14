@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <!-- Cho phép tìm cả trong PHIÊN ÂM (transliteration), BẢN DỊCH THƠ (translation)
+       và DỊCH NGHĨA (meaning) — trước đây search_vec chỉ có tên bài (A) + tên tác
+       giả (B) + nguyên tác (C), nên gõ một câu trong bản dịch/phiên âm không ra bài.
+       Thêm 3 trường này ở weight D (thấp hơn nguyên tác) để nguyên tác vẫn ưu tiên. -->
+
+  <changeSet id="025-poems-trigger-add-translations" author="claude">
+    <sql splitStatements="false"><![CDATA[
+      CREATE OR REPLACE FUNCTION poems_search_vec_trg() RETURNS trigger AS $$
+      DECLARE aname text;
+      BEGIN
+        SELECT name INTO aname FROM authors WHERE id = NEW.author_id;
+        NEW.search_vec :=
+          setweight(to_tsvector('simple', f_unaccent(coalesce(NEW.name, ''))), 'A') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(aname, ''))), 'B') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(NEW.content, ''))), 'C') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(NEW.transliteration, ''))), 'D') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(NEW.translation, ''))), 'D') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(NEW.meaning, ''))), 'D');
+        RETURN NEW;
+      END $$ LANGUAGE plpgsql;
+    ]]></sql>
+    <sql>DROP TRIGGER IF EXISTS trg_poems_search_vec ON poems</sql>
+    <sql>CREATE TRIGGER trg_poems_search_vec BEFORE INSERT OR UPDATE OF name, content, author_id, transliteration, translation, meaning ON poems FOR EACH ROW EXECUTE FUNCTION poems_search_vec_trg()</sql>
+  </changeSet>
+
+  <!-- Đổi tên tác giả -> làm mới search_vec: giữ đồng bộ đủ 3 trường D mới. -->
+  <changeSet id="025-authors-trigger-add-translations" author="claude">
+    <sql splitStatements="false"><![CDATA[
+      CREATE OR REPLACE FUNCTION authors_refresh_poems_search() RETURNS trigger AS $$
+      BEGIN
+        UPDATE poems SET search_vec =
+            setweight(to_tsvector('simple', f_unaccent(coalesce(name, ''))), 'A') ||
+            setweight(to_tsvector('simple', f_unaccent(coalesce(NEW.name, ''))), 'B') ||
+            setweight(to_tsvector('simple', f_unaccent(coalesce(content, ''))), 'C') ||
+            setweight(to_tsvector('simple', f_unaccent(coalesce(transliteration, ''))), 'D') ||
+            setweight(to_tsvector('simple', f_unaccent(coalesce(translation, ''))), 'D') ||
+            setweight(to_tsvector('simple', f_unaccent(coalesce(meaning, ''))), 'D')
+          WHERE author_id = NEW.id;
+        RETURN NEW;
+      END $$ LANGUAGE plpgsql;
+    ]]></sql>
+  </changeSet>
+
+  <!-- Backfill toàn bộ (set trực tiếp search_vec nên KHÔNG kích trigger). -->
+  <changeSet id="025-backfill-translations" author="claude">
+    <sql>
+      UPDATE poems p SET search_vec =
+          setweight(to_tsvector('simple', f_unaccent(coalesce(p.name, ''))), 'A') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(a.name, ''))), 'B') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(p.content, ''))), 'C') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(p.transliteration, ''))), 'D') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(p.translation, ''))), 'D') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(p.meaning, ''))), 'D')
+        FROM authors a WHERE a.id = p.author_id
+    </sql>
+    <sql>
+      UPDATE poems SET search_vec =
+          setweight(to_tsvector('simple', f_unaccent(coalesce(name, ''))), 'A') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(content, ''))), 'C') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(transliteration, ''))), 'D') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(translation, ''))), 'D') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(meaning, ''))), 'D')
+        WHERE author_id IS NULL
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

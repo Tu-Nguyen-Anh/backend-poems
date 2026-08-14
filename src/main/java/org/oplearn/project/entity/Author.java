@@ -42,4 +42,11 @@ public class Author extends BaseEntity {
 
   @Column(name = "bio", columnDefinition = "TEXT")
   private String bio;
+
+  /** Quốc gia tác giả (crawl thivien theo nhãn "Nước:"): tên nước + id phân loại của thivien. */
+  @Column(name = "country", length = 80)
+  private String country;
+
+  @Column(name = "country_id")
+  private Integer countryId;
 }

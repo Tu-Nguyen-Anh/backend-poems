@@ -56,7 +56,6 @@ public class OpLearnConstants {
     public static final String TOKEN_TYPE_ACCESS = "access";
     public static final String TOKEN_TYPE_REFRESH = "refresh";
     public static final String ROLE_ADMIN = "ADMIN";
-    public static final String ROLE_USER = "USER";
 
     public static final String[] WHITE_LIST = {
           "/swagger-ui.html",

@@ -28,5 +28,8 @@
     <include file="db/changelog/021-create-table-favorites.xml"/>
     <include file="db/changelog/022-create-table-poem-highlights.xml"/>
     <include file="db/changelog/023-add-author-avatar-local.xml"/>
+    <include file="db/changelog/024-add-author-country.xml"/>
+    <include file="db/changelog/025-search-vec-add-translations.xml"/>
+    <include file="db/changelog/026-search-vec-add-poem-translations.xml"/>
 
 </databaseChangeLog>

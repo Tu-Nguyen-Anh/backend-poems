@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <!-- Quốc gia tác giả (crawl thivien theo nhãn "Nước:"). country = tên nước,
+       country_id = id phân loại của thivien (dùng cho lọc/duyệt theo nước sau này). -->
+  <changeSet id="024-authors-country" author="claude">
+    <sql>ALTER TABLE authors ADD COLUMN IF NOT EXISTS country VARCHAR(80)</sql>
+    <sql>ALTER TABLE authors ADD COLUMN IF NOT EXISTS country_id INT</sql>
+  </changeSet>
+
+</databaseChangeLog>
