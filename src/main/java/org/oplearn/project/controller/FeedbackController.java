@@ -62,6 +62,7 @@ public class FeedbackController {
   ) {
     log.info("(list) status: {}, size: {}, page: {}, isAll: {}", status, size, page, isAll);
 
+    size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.list(status, size, page, isAll));
   }
 
@@ -73,6 +74,7 @@ public class FeedbackController {
   ) {
     log.info("(list) poemId: {}, size: {}, page: {}", poemId, size, page);
 
+    size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, facade.getFeedbackByPoemId(poemId, size, page));
   }
 
@@ -84,6 +86,7 @@ public class FeedbackController {
   ) {
     log.info("(list) userId: {}, size: {}, page: {}", userId, size, page);
 
+    size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, facade.getFeedbackByUserId(userId, size, page));
   }
 

@@ -80,7 +80,9 @@ public class AuthorServiceImpl implements AuthorService {
   public PageResponse<AuthorResponse> list(String keyword, int size, int page, boolean isAll) {
     log.info("Service) list author");
 
-    Pageable pageable = isAll ? Pageable.unpaged() : PageRequest.of(page, size);
+    Pageable pageable = isAll
+      ? PageRequest.of(0, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_ALL_SIZE)
+      : PageRequest.of(page, size);
 
     Page<Author> authors = StringUtils.hasText(keyword)
       ? repository.search(keyword, pageable)

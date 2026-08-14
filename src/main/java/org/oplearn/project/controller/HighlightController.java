@@ -65,6 +65,7 @@ public class HighlightController {
   ) {
     log.info("(list) my highlights");
 
+    size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, facade.myHighlights(size, page));
   }
 }

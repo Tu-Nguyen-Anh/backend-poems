@@ -31,5 +31,6 @@
     <include file="db/changelog/024-add-author-country.xml"/>
     <include file="db/changelog/025-search-vec-add-translations.xml"/>
     <include file="db/changelog/026-search-vec-add-poem-translations.xml"/>
+    <include file="db/changelog/027-add-pushkin-toi-yeu-em.xml"/>
 
 </databaseChangeLog>

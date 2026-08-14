@@ -170,6 +170,24 @@ public class PoemServiceImpl implements PoemService {
     return cachedActiveCount;
   }
 
+  // Thống kê trang chủ: JOIN + FILTER toàn bảng, khá nặng nhưng gần như bất biến
+  // giữa các lần import → cache 10 phút.
+  private static final long STATS_TTL_MS = 10 * 60_000;
+  private volatile org.oplearn.project.dto.response.StatsResponse cachedStats;
+  private volatile long cachedStatsAt = 0;
+
+  public org.oplearn.project.dto.response.StatsResponse getStats() {
+    long now = System.currentTimeMillis();
+    if (cachedStats == null || now - cachedStatsAt > STATS_TTL_MS) {
+      PoemRepository.StatsRow r = repository.getStats();
+      cachedStats = new org.oplearn.project.dto.response.StatsResponse(
+        r.getTotalPoems(), r.getTotalAuthors(), r.getTotalCountries(),
+        r.getVietCount(), r.getHanCount(), r.getForeignCount());
+      cachedStatsAt = now;
+    }
+    return cachedStats;
+  }
+
   public PageResponse<PoemResponse> listPoemLatest(int size, int page) {
     Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 

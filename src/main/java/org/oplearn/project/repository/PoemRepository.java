@@ -292,6 +292,33 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
   @Query("SELECT count(p) FROM Poem p WHERE p.isDeleted = false")
   long countActive();
 
+  /** Projection cho thống kê trang chủ — alias khớp tên getter. */
+  interface StatsRow {
+    long getTotalPoems();
+    long getTotalAuthors();
+    long getTotalCountries();
+    long getVietCount();
+    long getHanCount();
+    long getForeignCount();
+  }
+
+  /** Thống kê tổng quan 1 lượt (đếm bài theo nhóm ngôn ngữ/quốc gia tác giả).
+   *  Nặng (JOIN + FILTER toàn bảng) → gọi qua cache TTL ở service. */
+  @Query(value = """
+      SELECT
+        (SELECT count(*) FROM poems WHERE is_deleted = false) AS "totalPoems",
+        (SELECT count(*) FROM authors WHERE is_deleted = false) AS "totalAuthors",
+        (SELECT count(DISTINCT country) FROM authors
+           WHERE is_deleted = false AND country IS NOT NULL AND btrim(country) <> '') AS "totalCountries",
+        count(*) FILTER (WHERE p.language IS DISTINCT FROM 'Hán' AND a.country_id = 2)          AS "vietCount",
+        count(*) FILTER (WHERE p.language = 'Hán')                                              AS "hanCount",
+        count(*) FILTER (WHERE p.language IS DISTINCT FROM 'Hán' AND a.country_id IS DISTINCT FROM 2) AS "foreignCount"
+      FROM poems p
+      LEFT JOIN authors a ON a.id = p.author_id
+      WHERE p.is_deleted = false
+    """, nativeQuery = true)
+  StatsRow getStats();
+
   /** Bốc id ngẫu nhiên trước (chỉ sort cột id, không kéo content) — rẻ hơn
    *  nhiều so với ORDER BY random() trên cả dòng có nội dung bài thơ. */
   @Query(value = "SELECT id FROM poems WHERE is_deleted = false ORDER BY random() LIMIT :n", nativeQuery = true)

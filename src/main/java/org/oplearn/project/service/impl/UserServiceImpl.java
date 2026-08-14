@@ -96,7 +96,9 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public PageResponse<UserResponse> list(String keyword, int size, int page, boolean isAll) {
-    Pageable pageable = isAll ? Pageable.unpaged() : PageRequest.of(page, size);
+    Pageable pageable = isAll
+      ? PageRequest.of(0, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_ALL_SIZE)
+      : PageRequest.of(page, size);
 
     Page<User> users = StringUtils.hasText(keyword)
       ? repository.search(keyword, pageable)
@@ -110,6 +112,17 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public UserResponse detail(Long id) {
+    // Chống IDOR: chỉ chính chủ hoặc admin mới xem được profile của một id.
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    User currentUser = repository.findByUsernameAndIsDeletedFalse(authentication.getName())
+      .orElseThrow(UserNotFoundException::new);
+    boolean isAdmin = authentication.getAuthorities().stream()
+      .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+    if (!isAdmin && !currentUser.getId().equals(id)) {
+      log.warn("(detail) user {} not authorized to view user {}", currentUser.getId(), id);
+      throw new UserUnauthorizedException();
+    }
+
     return repository.findByIdAndIsDeletedFalse(id)
       .map(UserResponse::from)
       .orElseThrow(UserNotFoundException::new);

@@ -27,5 +27,7 @@ public interface PoemService {
 
   PageResponse<PoemResponse> random();
 
+  org.oplearn.project.dto.response.StatsResponse getStats();
+
   Poem getAvailablePoemAndThrow(Long id);
 }

@@ -84,5 +84,8 @@ public class OpLearnConstants {
     public static final String IS_ALL_DEFAULT = "false";
     /** Trần page size cho mọi API list/filter — chặn fetch quá lớn gây lag. */
     public static final int MAX_PAGE_SIZE = 200;
+    /** Trần CỨNG cho nhánh all=true (thay Pageable.unpaged) — chống DoS kéo cả bảng
+     *  trong 1 request. Tổng số (amount) vẫn đúng nhờ count query riêng. */
+    public static final int MAX_ALL_SIZE = 10000;
   }
 }

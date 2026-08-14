@@ -61,6 +61,7 @@ public class UserController {
         @RequestParam(name = PARAM_ALL, defaultValue = IS_ALL_DEFAULT) boolean isAll
   ) {
     log.info("(list) keyword: {}, size: {}, page: {}, isAll: {}", keyword, size, page, isAll);
+    size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.list(keyword, size, page, isAll));
   }
 

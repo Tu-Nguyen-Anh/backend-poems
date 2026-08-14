@@ -3,6 +3,7 @@ package org.oplearn.project.security.jwt;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -18,8 +19,13 @@ import static org.oplearn.project.constants.OpLearnConstants.AuthConstant.TOKEN_
 import static org.oplearn.project.constants.OpLearnConstants.AuthConstant.TOKEN_TYPE_CLAIM;
 import static org.oplearn.project.constants.OpLearnConstants.AuthConstant.TOKEN_TYPE_REFRESH;
 
+@Slf4j
 @Component
 public class JwtTokenProvider {
+  /** Khóa dev công khai trong application.yml — nếu prod dùng khóa này, ai cũng ký được token admin. */
+  private static final String DEFAULT_DEV_SECRET =
+    "ZGV2LW9ubHktc2VjcmV0LWtleS1jaGFuZ2UtbWUtaW4tcHJvZHVjdGlvbi0xMjM0NTY3OA==";
+
   private final SecretKey secretKey;
   private final long expirationMs;
   private final long refreshExpirationMs;
@@ -29,6 +35,11 @@ public class JwtTokenProvider {
         @Value("${security.jwt.expiration-ms}") long expirationMs,
         @Value("${security.jwt.refresh-expiration-ms}") long refreshExpirationMs
   ) {
+    if (DEFAULT_DEV_SECRET.equals(base64Secret)) {
+      log.error("!!! BẢO MẬT: đang dùng JWT secret MẶC ĐỊNH công khai. Bất kỳ ai cũng có thể "
+        + "giả mạo token ADMIN. Hãy đặt biến môi trường JWT_SECRET (chuỗi base64 ngẫu nhiên >= 256-bit) "
+        + "cho môi trường thật NGAY.");
+    }
     this.secretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(base64Secret));
     this.expirationMs = expirationMs;
     this.refreshExpirationMs = refreshExpirationMs;

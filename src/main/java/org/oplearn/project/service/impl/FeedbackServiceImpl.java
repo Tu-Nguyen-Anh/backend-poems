@@ -55,7 +55,9 @@ public class FeedbackServiceImpl implements FeedbackService {
   public PageResponse<FeedbackResponse> list(FeedbackStatus status, int size, int page, boolean isAll) {
     log.info("(service) list feedback");
 
-    Pageable pageable = isAll ? Pageable.unpaged() : PageRequest.of(page, size);
+    Pageable pageable = isAll
+      ? PageRequest.of(0, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_ALL_SIZE)
+      : PageRequest.of(page, size);
 
     Page<FeedbackResponse> feedbacks = Objects.nonNull(status)
       ? repository.findByStatus(status, pageable)

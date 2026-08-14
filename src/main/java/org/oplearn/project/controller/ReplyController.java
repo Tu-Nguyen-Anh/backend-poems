@@ -62,6 +62,7 @@ public class ReplyController {
   ) {
     log.info("(list by comment id) comment id: {}", commentId);
 
+    size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE , facade.getReplyByCommentId(commentId, size, page));
   }
 }

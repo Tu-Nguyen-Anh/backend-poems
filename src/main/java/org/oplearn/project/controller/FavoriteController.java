@@ -47,6 +47,7 @@ public class FavoriteController {
   ) {
     log.info("(list) my favorites");
 
+    size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, facade.myFavorites(size, page));
   }
 }
