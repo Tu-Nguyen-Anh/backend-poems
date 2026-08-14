@@ -4,7 +4,7 @@ spring:
   jackson:
     property-naming-strategy: SNAKE_CASE
   datasource:
-    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/poems_db_thivien}
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/poems_db_prod}
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
