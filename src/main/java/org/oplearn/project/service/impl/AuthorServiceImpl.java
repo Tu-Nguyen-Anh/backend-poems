@@ -142,4 +142,46 @@ public class AuthorServiceImpl implements AuthorService {
     return repository.findByIdAndIsDeletedFalse(id)
       .orElseThrow(AuthorNotFoundException::new);
   }
+
+  /** Danh sách tác giả tiêu biểu ghim tay, khớp theo tên bỏ dấu (viết thường). */
+  private static final java.util.List<String> FEATURED_KEYS = java.util.List.of(
+    "nguyen du", "ho xuan huong", "nguyen trai", "nguyen binh khiem", "le thanh tong",
+    "nguyen cong tru", "cao ba quat", "nguyen khuyen", "tran te xuong", "tan da",
+    "xuan dieu", "han mac tu", "huy can", "che lan vien", "nguyen binh", "to huu",
+    "xuan quynh", "te hanh", "nguyen dinh thi", "bui giang"
+  );
+
+  public java.util.List<AuthorResponse> featured() {
+    log.info("(Service) list featured authors (pinned)");
+
+    java.util.List<AuthorResponse> rows = repository.findByUnaccentNames(FEATURED_KEYS);
+
+    // Nhiều tác giả có thể trùng tên bỏ dấu → giữ người nhiều bài nhất cho mỗi key.
+    java.util.Map<String, AuthorResponse> best = new java.util.HashMap<>();
+    for (AuthorResponse r : rows) {
+      String key = unaccentLower(r.getName());
+      AuthorResponse cur = best.get(key);
+      long rc = r.getPoemCount() == null ? 0 : r.getPoemCount();
+      long cc = (cur == null || cur.getPoemCount() == null) ? -1 : cur.getPoemCount();
+      if (cur == null || rc > cc) {
+        best.put(key, r);
+      }
+    }
+
+    java.util.List<AuthorResponse> out = new java.util.ArrayList<>();
+    for (String key : FEATURED_KEYS) {
+      AuthorResponse r = best.get(key);
+      if (r != null) out.add(r);
+    }
+    return out;
+  }
+
+  /** Bỏ dấu tiếng Việt + viết thường, khớp cách f_unaccent(lower(...)) trong DB. */
+  private static String unaccentLower(String s) {
+    if (s == null) return "";
+    String n = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD)
+      .replaceAll("\\p{M}+", "");
+    n = n.replace('đ', 'd').replace('Đ', 'D');
+    return n.toLowerCase().trim();
+  }
 }

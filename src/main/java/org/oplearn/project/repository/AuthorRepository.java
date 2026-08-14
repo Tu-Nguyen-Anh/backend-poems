@@ -81,6 +81,20 @@ public interface AuthorRepository extends JpaRepository<Author, Long> {
     """)
   Page<org.oplearn.project.dto.response.AuthorResponse> findTopByPoemCount(Pageable pageable);
 
+  /** Tác giả tiêu biểu ghim tay: khớp theo tên đã bỏ dấu + viết thường (bền vững
+   *  khi re-import DB đổi id). Trả kèm số bài + avatar; service tự sắp lại đúng thứ tự. */
+  @Query("""
+    SELECT new org.oplearn.project.dto.response.AuthorResponse(
+      a.id, a.name, a.birthYear, a.achievement, a.hometown, COUNT(p.id), a.avatarUrl, a.avatarLocal
+    )
+    FROM Author a
+    LEFT JOIN Poem p ON p.authorId = a.id AND p.isDeleted = false
+    WHERE a.isDeleted = false AND function('f_unaccent', lower(a.name)) IN :names
+    GROUP BY a.id, a.name, a.birthYear, a.achievement, a.hometown, a.avatarUrl, a.avatarLocal
+    """)
+  java.util.List<org.oplearn.project.dto.response.AuthorResponse> findByUnaccentNames(
+    @Param("names") java.util.List<String> names);
+
   @Query("""
     SELECT new org.oplearn.project.dto.response.PoemResponse(
               p.id,

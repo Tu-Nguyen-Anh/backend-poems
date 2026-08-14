@@ -224,7 +224,7 @@ public class PoemServiceImpl implements PoemService {
   public PageResponse<PoemResponse> random() {
     // 2 bước: bốc id ngẫu nhiên (sort nhẹ trên id) rồi mới nạp nội dung —
     // tránh ORDER BY random() kéo + sort cả cột content trên toàn bảng.
-    java.util.List<Long> ids = repository.findRandomIds(10);
+    java.util.List<Long> ids = repository.findRandomIds(6);
     if (ids.isEmpty()) {
       return PageResponse.of(java.util.List.of(), 0);
     }
