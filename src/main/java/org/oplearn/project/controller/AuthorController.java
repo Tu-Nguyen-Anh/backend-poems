@@ -77,6 +77,12 @@ public class AuthorController {
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.listTopByPoemCount(size, page));
   }
 
+  @GetMapping("/featured")
+  public ResponseGeneral<java.util.List<AuthorResponse>> featured() {
+    log.info("(featured) list pinned featured authors");
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.featured());
+  }
+
   @GetMapping("/{authorId}/poems")
   public ResponseGeneral<PageResponse<PoemResponse>> listPoemByAuthorId(
     @PathVariable Long authorId,

@@ -19,6 +19,8 @@ public interface AuthorService {
 
   PageResponse<AuthorResponse> listTopByPoemCount(int size, int page);
 
+  java.util.List<AuthorResponse> featured();
+
   PageResponse<PoemResponse> listPoemByAuthorId(Long id, int size, int page);
 
   Author getAvailableAuthorAndThrow(Long id);
