@@ -43,7 +43,7 @@ public class PoemServiceImpl implements PoemService {
 
   @Override
   public java.util.List<String> listEras() {
-    return repository.findDistinctEras();
+    return cached("eras", repository::findDistinctEras);
   }
 
   @Override
@@ -52,22 +52,24 @@ public class PoemServiceImpl implements PoemService {
     String er = StringUtils.hasText(era) ? era.trim() : null;
 
     // Chọn cấp dựa trên đường dẫn đã cho: chưa có gì → ngôn ngữ; có ngôn ngữ → thời kỳ;
-    // có thời kỳ → thể thơ; có thể thơ → tác giả.
-    java.util.List<PoemRepository.FacetCount> rows;
-    if (lang == null) {
-      rows = repository.facetLanguages();
-    } else if (er == null) {
-      rows = repository.facetEras(lang);
-    } else if (genreId == null) {
-      rows = repository.facetGenres(lang, er);
-    } else {
-      rows = repository.facetAuthors(lang, er, genreId);
-    }
+    // có thời kỳ → thể thơ; có thể thơ → tác giả. Cache theo đường dẫn (ít khi đổi).
+    return cached("facets|" + lang + "|" + er + "|" + genreId, () -> {
+      java.util.List<PoemRepository.FacetCount> rows;
+      if (lang == null) {
+        rows = repository.facetLanguages();
+      } else if (er == null) {
+        rows = repository.facetEras(lang);
+      } else if (genreId == null) {
+        rows = repository.facetGenres(lang, er);
+      } else {
+        rows = repository.facetAuthors(lang, er, genreId);
+      }
 
-    return rows.stream()
-      .map(r -> new org.oplearn.project.dto.response.FacetItemResponse(
-        r.getId(), r.getLabel(), r.getCount() == null ? 0L : r.getCount()))
-      .toList();
+      return rows.stream()
+        .map(r -> new org.oplearn.project.dto.response.FacetItemResponse(
+          r.getId(), r.getLabel(), r.getCount() == null ? 0L : r.getCount()))
+        .toList();
+    });
   }
 
   @Override
@@ -88,7 +90,7 @@ public class PoemServiceImpl implements PoemService {
 
   @Override
   public java.util.List<String> listLanguages() {
-    return repository.findDistinctLanguages();
+    return cached("langs", repository::findDistinctLanguages);
   }
 
   private static PoemResponse toResponse(PoemRepository.PoemSearchRow row) {
@@ -186,6 +188,26 @@ public class PoemServiceImpl implements PoemService {
       cachedStatsAt = now;
     }
     return cachedStats;
+  }
+
+  // Cache TTL cho cây duyệt facet + danh sách thời kỳ/ngôn ngữ: đều là GROUP BY
+  // toàn bảng poems, chỉ đổi khi import lại nên cache 30 phút. Số key hữu hạn
+  // (theo taxonomy: ngôn ngữ × thời kỳ × thể thơ) nên map không phình vô hạn.
+  private static final long FACET_TTL_MS = 30 * 60_000;
+  private record CacheEntry(long at, Object data) {}
+  private final java.util.concurrent.ConcurrentHashMap<String, CacheEntry> facetCache =
+    new java.util.concurrent.ConcurrentHashMap<>();
+
+  @SuppressWarnings("unchecked")
+  private <T> T cached(String key, java.util.function.Supplier<T> loader) {
+    long now = System.currentTimeMillis();
+    CacheEntry e = facetCache.get(key);
+    if (e != null && now - e.at() < FACET_TTL_MS) {
+      return (T) e.data();
+    }
+    T value = loader.get();
+    facetCache.put(key, new CacheEntry(now, value));
+    return value;
   }
 
   public PageResponse<PoemResponse> listPoemLatest(int size, int page) {
