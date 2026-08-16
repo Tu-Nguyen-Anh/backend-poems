@@ -22,6 +22,7 @@
     <java.version>17</java.version>
     <springdoc.version>2.3.0</springdoc.version>
     <jjwt.version>0.12.5</jjwt.version>
+    <aws.sdk.version>2.25.16</aws.sdk.version>
   </properties>
 
   <dependencies>
@@ -83,6 +84,12 @@
       <artifactId>jjwt-jackson</artifactId>
       <version>${jjwt.version}</version>
       <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>s3</artifactId>
+      <version>${aws.sdk.version}</version>
     </dependency>
 
     <dependency>

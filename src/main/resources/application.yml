@@ -1,10 +1,14 @@
 spring:
   application:
     name: backend-poems
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
   jackson:
     property-naming-strategy: SNAKE_CASE
   datasource:
-    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/poems_db_prod}
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/poems_db}
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -18,21 +22,6 @@ spring:
 
 server:
   port: ${PORT:8089}
-  # Chống HTTP slow attack (Slowloris) + giới hạn tài nguyên/payload.
-  # Lưu ý: chống DDoS ồ ạt phải làm chính ở lớp Cloudflare/nginx (rate limit,
-  # limit_conn, client_header/body_timeout) — đây là lớp phòng thủ sâu ở app.
-  tomcat:
-    connection-timeout: ${TOMCAT_CONN_TIMEOUT:8s}   # tối đa để nhận xong request-line + headers
-    keep-alive-timeout: 15s
-    max-keep-alive-requests: 100
-    max-connections: ${TOMCAT_MAX_CONN:8192}
-    accept-count: 100
-    threads:
-      max: ${TOMCAT_MAX_THREADS:200}
-      min-spare: 10
-    max-swallow-size: 2MB
-    max-http-form-post-size: 1MB
-  max-http-request-header-size: 16KB
 
 app:
   seo:
@@ -56,3 +45,12 @@ security:
 logging:
   level:
     org.oplearn: ${LOG_LEVEL:info}
+
+aws:
+  s3:
+    endpoint: ${AWS_S3_ENDPOINT:http://localhost:9000}
+    region: ${AWS_S3_REGION:us-east-1}
+    access-key: ${AWS_S3_ACCESS_KEY:minioadmin}
+    secret-key: ${AWS_S3_SECRET_KEY:minioadmin}
+    bucket-name: ${AWS_S3_BUCKET_NAME:poems-media}
+
