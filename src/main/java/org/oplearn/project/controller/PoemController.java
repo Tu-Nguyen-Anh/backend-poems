@@ -1,5 +1,6 @@
 package org.oplearn.project.controller;
 
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oplearn.project.dto.request.PoemRequest;
@@ -11,10 +12,10 @@ import org.oplearn.project.service.PoemService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 import static org.oplearn.project.constants.OpLearnConstants.CommonConstants.*;
-import static org.oplearn.project.constants.OpLearnConstants.VariableConstant.PAGE_DEFAULT;
-import static org.oplearn.project.constants.OpLearnConstants.VariableConstant.SIZE_DEFAULT;
-import static org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE;
+import static org.oplearn.project.constants.OpLearnConstants.VariableConstant.*;
 
 @RestController
 @Slf4j
@@ -50,7 +51,9 @@ public class PoemController {
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.listLanguages());
   }
 
-  /** Nhánh con của cây duyệt phân cấp (Ngôn ngữ → Thời kỳ → Thể thơ → Tác giả). */
+  /**
+   * Nhánh con của cây duyệt phân cấp (Ngôn ngữ → Thời kỳ → Thể thơ → Tác giả).
+   */
   @GetMapping("/facets")
   public ResponseGeneral<java.util.List<org.oplearn.project.dto.response.FacetItemResponse>> facets(
     @RequestParam(name = "language", required = false) String language,
@@ -61,7 +64,9 @@ public class PoemController {
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.facets(language, era, genreId));
   }
 
-  /** Danh sách bài ở cấp lá theo đường dẫn duyệt (lọc theo ngôn ngữ/thời kỳ/thể thơ/tác giả). */
+  /**
+   * Danh sách bài ở cấp lá theo đường dẫn duyệt (lọc theo ngôn ngữ/thời kỳ/thể thơ/tác giả).
+   */
   @GetMapping("/browse")
   public ResponseGeneral<PageResponse<PoemResponse>> browse(
     @RequestParam(name = "language", required = false) String language,
@@ -104,7 +109,7 @@ public class PoemController {
 
     service.delete(id);
 
-    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE );
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE);
   }
 
   @GetMapping("/latest")
@@ -119,10 +124,14 @@ public class PoemController {
   }
 
   @GetMapping("/random")
-  public ResponseGeneral<PageResponse<PoemResponse>> listRandom() {
+  public ResponseGeneral<PageResponse<PoemResponse>> listRandom(
+    @RequestParam(name = "authorIds", required = false) @Size(max = 3, message = "author.max_selection_3") List<Long> authorIds,
+    @RequestParam(name = "genreIds", required = false) @Size(max = 3, message = "genre.max_selection_3") List<Long> genreIds,
+    @RequestParam(name = "eras", required = false) @Size(max = 3, message = "era.max_selection_3") List<String> eras
+  ) {
     log.info("(list random) poem");
 
-    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.random());
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.randomPersonalized(authorIds, genreIds, eras));
   }
 
   @GetMapping("/stats")

@@ -7,6 +7,7 @@ import org.oplearn.project.dto.response.PoemResponse;
 import org.oplearn.project.dto.response.PoemTranslationResponse;
 import org.oplearn.project.entity.Poem;
 import org.oplearn.project.exception.PoemNotFoundException;
+import org.oplearn.project.exception.RandomPoemBadRequestException;
 import org.oplearn.project.repository.PoemRepository;
 import org.oplearn.project.repository.PoemTranslationRepository;
 import org.oplearn.project.service.PoemService;
@@ -17,6 +18,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -194,7 +197,10 @@ public class PoemServiceImpl implements PoemService {
   // toàn bảng poems, chỉ đổi khi import lại nên cache 30 phút. Số key hữu hạn
   // (theo taxonomy: ngôn ngữ × thời kỳ × thể thơ) nên map không phình vô hạn.
   private static final long FACET_TTL_MS = 30 * 60_000;
-  private record CacheEntry(long at, Object data) {}
+
+  private record CacheEntry(long at, Object data) {
+  }
+
   private final java.util.concurrent.ConcurrentHashMap<String, CacheEntry> facetCache =
     new java.util.concurrent.ConcurrentHashMap<>();
 
@@ -221,15 +227,38 @@ public class PoemServiceImpl implements PoemService {
     return PageResponse.of(poems, (int) activeCount());
   }
 
-  public PageResponse<PoemResponse> random() {
-    // 2 bước: bốc id ngẫu nhiên (sort nhẹ trên id) rồi mới nạp nội dung —
-    // tránh ORDER BY random() kéo + sort cả cột content trên toàn bảng.
-    java.util.List<Long> ids = repository.findRandomIds(6);
-    if (ids.isEmpty()) {
-      return PageResponse.of(java.util.List.of(), 0);
+  public PageResponse<PoemResponse> randomPersonalized(List<Long> authorIds, List<Long> genreIds, List<String> eras) {
+
+    if (
+      (authorIds != null && authorIds.size() > 3)
+        || (genreIds != null && genreIds.size() > 3)
+        || (eras != null && eras.size() > 3)
+    ) {
+      throw new RandomPoemBadRequestException();
     }
 
-    java.util.List<PoemResponse> poems = repository.findResponsesByIds(ids).stream()
+
+    Long[] authorArray = (authorIds != null && !authorIds.isEmpty()) ? authorIds.toArray(new Long[0]) : null;
+    Long[] genreArray = (genreIds != null && !genreIds.isEmpty()) ? genreIds.toArray(new Long[0]) : null;
+    String[] eraArray = (eras != null && !eras.isEmpty()) ? eras.toArray(new String[0]) : null;
+
+    boolean hasPreferences = (authorArray != null || genreArray != null || eraArray != null);
+
+    List<Long> ids = hasPreferences
+      ? repository.findPersonalizedRandomIds(authorArray, genreArray, eraArray, 10)
+      : repository.findRandomIds(10);
+
+
+    if (ids.isEmpty()) {
+      ids = repository.findRandomIds(10);
+    }
+
+    if (ids.isEmpty()) {
+      return PageResponse.of(List.of(), 0);
+    }
+
+
+    List<PoemResponse> poems = repository.findResponsesByIds(ids).stream()
       .map(PoemResponse::fromSummary)
       .toList();
 
