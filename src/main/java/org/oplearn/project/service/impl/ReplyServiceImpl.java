@@ -2,17 +2,18 @@ package org.oplearn.project.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oplearn.project.dto.response.PageResponse;
+import org.oplearn.project.dto.response.CursorPageResponse;
 import org.oplearn.project.dto.response.ReplyItemResponse;
 import org.oplearn.project.dto.response.ReplyResponse;
 import org.oplearn.project.entity.Reply;
 import org.oplearn.project.exception.ReplyNotFoundException;
 import org.oplearn.project.repository.ReplyRepository;
 import org.oplearn.project.service.ReplyService;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -49,14 +50,39 @@ public class ReplyServiceImpl implements ReplyService {
       .orElseThrow(ReplyNotFoundException::new);
   }
 
-  public PageResponse<ReplyItemResponse> getReplyByCommentId(Long commentId, int size, int page) {
-    Pageable pageable = PageRequest.of(page, size);
+  public CursorPageResponse<ReplyItemResponse> getReplyByCommentId(Long commentId, Long cursor, int size) {
+    Pageable pageable = PageRequest.of(0, size + 1);
 
-    Page<ReplyItemResponse> replies = repository.findByCommentId(commentId, pageable);
+    List<ReplyItemResponse> replies = repository.findByCommentId(commentId, cursor, pageable);
 
-    return PageResponse.of(
-      replies.getContent(),
-      (int) replies.getTotalElements()
-    );
+    boolean hasNext = replies.size() > size;
+    Long nextCursor = null;
+
+    if(hasNext) {
+      replies = replies.subList(0, size);
+      nextCursor = replies.get(replies.size() - 1).getId();
+    }
+
+    Long totalElements = (nextCursor == null) ? repository.countByCommentIdAndIsDeletedFalse(commentId) : null;
+
+    return CursorPageResponse.of(replies, nextCursor, hasNext, totalElements);
+  }
+
+  public CursorPageResponse<ReplyResponse> getReplyByUserId(Long userId, Long cursor, int size) {
+    Pageable pageable = PageRequest.of(0, size + 1);
+
+    List<ReplyResponse> replies = repository.findByUserId(userId, cursor, pageable);
+
+    boolean hasNext = replies.size() > size;
+    Long nextCursor = null;
+
+    if(hasNext) {
+      replies = replies.subList(0, size);
+      nextCursor = replies.get(replies.size() - 1).getId();
+    }
+
+    Long totalElements = (nextCursor == null) ? repository.countByUserIdAndIsDeletedFalse(userId) : null;
+
+    return CursorPageResponse.of(replies, nextCursor, hasNext, totalElements);
   }
 }

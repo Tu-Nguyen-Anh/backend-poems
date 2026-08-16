@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oplearn.project.dto.request.CommentRequest;
 import org.oplearn.project.dto.response.CommentResponse;
+import org.oplearn.project.dto.response.CursorPageResponse;
 import org.oplearn.project.dto.response.PageResponse;
 import org.oplearn.project.entity.Comment;
 import org.oplearn.project.entity.Poem;
@@ -71,7 +72,7 @@ public class CommentFacadeServiceImpl implements CommentFacadeService {
     return CommentResponse.from(updatedComment, existingComment.getUsername());
   }
 
-  public PageResponse<CommentResponse> getCommentsByUserId(Long userId, int size, int page) {
+  public CursorPageResponse<CommentResponse> getCommentsByUserId(Long userId, Long cursor, int size) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     String currentUsername = authentication.getName();
 
@@ -85,7 +86,7 @@ public class CommentFacadeServiceImpl implements CommentFacadeService {
       throw new UserUnauthorizedException();
     }
 
-    return commentService.getCommentsByUserId(userId, size, page);
+    return commentService.getCommentsByUserId(userId, cursor, size);
   }
 
   public void delete(Long id) {

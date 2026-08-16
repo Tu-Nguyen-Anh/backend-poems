@@ -3,16 +3,17 @@ package org.oplearn.project.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oplearn.project.dto.response.CommentResponse;
-import org.oplearn.project.dto.response.PageResponse;
+import org.oplearn.project.dto.response.CursorPageResponse;
 import org.oplearn.project.entity.Comment;
 import org.oplearn.project.exception.CommentNotFoundException;
 import org.oplearn.project.repository.CommentRepository;
 import org.oplearn.project.service.CommentService;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -53,27 +54,41 @@ public class CommentServiceImpl implements CommentService {
       .orElseThrow(CommentNotFoundException::new);
   }
 
-  public PageResponse<CommentResponse> getCommentsByPoemId(Long poemId, int size, int page) {
-    Pageable pageable = PageRequest.of(page, size);
+  public CursorPageResponse<CommentResponse> getCommentsByPoemId(Long poemId, Long cursor, int size) {
+    Pageable pageable = PageRequest.of(0, size + 1);
 
-    Page<CommentResponse> comments = repository.findByPoemId(poemId, pageable);
+    List<CommentResponse> comments = repository.findByPoemIdCursor(poemId, cursor, pageable);
 
-    return PageResponse.of(
-      comments.getContent(),
-      (int) comments.getTotalElements()
-    );
+    boolean hasNext = comments.size() > size;
+    Long nextCursor = null;
+
+    if (hasNext) {
+      comments = comments.subList(0, size);
+      nextCursor = comments.get(comments.size() - 1).getId();
+    }
+
+    Long totalElements = (cursor == null) ? repository.countByPoemIdAndIsDeletedFalse(poemId) : null;
+
+    return CursorPageResponse.of(comments, nextCursor, hasNext, totalElements);
   }
 
-  public PageResponse<CommentResponse> getCommentsByUserId(Long userId, int size, int page) {
+  public CursorPageResponse<CommentResponse> getCommentsByUserId(Long userId, Long cursor, int size) {
 
-    Pageable pageable = PageRequest.of(page, size);
+    Pageable pageable = PageRequest.of(0, size + 1);
 
-    Page<CommentResponse> comments = repository.findByUserId(userId, pageable);
+    List<CommentResponse> comments = repository.findByUserIdCursor(userId, cursor, pageable);
 
-    return PageResponse.of(
-      comments.getContent(),
-      (int) comments.getTotalElements()
-    );
+    boolean hasNext = comments.size() > size;
+    Long nextCursor = null;
+
+    if (hasNext) {
+      comments = comments.subList(0, size);
+      nextCursor = comments.get(comments.size() - 1).getId();
+    }
+
+    Long totalElements = (cursor == null) ? repository.countByUserIdAndIsDeletedFalse(userId) : null;
+
+    return CursorPageResponse.of(comments, nextCursor, hasNext, totalElements);
   }
 
   public Comment getAvailableCommentAndThrow(Long id) {

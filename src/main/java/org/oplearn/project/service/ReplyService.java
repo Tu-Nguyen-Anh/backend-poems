@@ -1,5 +1,6 @@
 package org.oplearn.project.service;
 
+import org.oplearn.project.dto.response.CursorPageResponse;
 import org.oplearn.project.dto.response.PageResponse;
 import org.oplearn.project.dto.response.ReplyItemResponse;
 import org.oplearn.project.dto.response.ReplyResponse;
@@ -14,5 +15,7 @@ public interface ReplyService {
 
   ReplyResponse detail(Long id);
 
-  PageResponse<ReplyItemResponse> getReplyByCommentId(Long commentId, int size, int page);
+  CursorPageResponse<ReplyItemResponse> getReplyByCommentId(Long commentId, Long cursor, int size);
+
+  CursorPageResponse<ReplyResponse> getReplyByUserId(Long userId, Long cursor, int size);
 }

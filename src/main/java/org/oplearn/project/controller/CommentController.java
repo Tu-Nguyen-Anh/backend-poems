@@ -5,14 +5,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oplearn.project.dto.request.CommentRequest;
 import org.oplearn.project.dto.response.CommentResponse;
-import org.oplearn.project.dto.response.PageResponse;
+import org.oplearn.project.dto.response.CursorPageResponse;
 import org.oplearn.project.dto.response.ResponseGeneral;
 import org.oplearn.project.facade.CommentFacadeService;
 import org.oplearn.project.service.CommentService;
 import org.springframework.web.bind.annotation.*;
 
 import static org.oplearn.project.constants.OpLearnConstants.CommonConstants.*;
-import static org.oplearn.project.constants.OpLearnConstants.VariableConstant.PAGE_DEFAULT;
 import static org.oplearn.project.constants.OpLearnConstants.VariableConstant.SIZE_DEFAULT;
 
 @RestController
@@ -54,26 +53,28 @@ public class CommentController {
   }
 
   @GetMapping("/user/{userId}")
-  public ResponseGeneral<PageResponse<CommentResponse>> listByUser(
+  public ResponseGeneral<CursorPageResponse<CommentResponse>> listByUser(
     @PathVariable Long userId,
-    @RequestParam(name=PARAM_SIZE, defaultValue =SIZE_DEFAULT) int size,
-    @RequestParam(name = PARAM_PAGE, defaultValue = PAGE_DEFAULT) int page
+    @RequestParam(name = PARAM_CURSOR, required = false) Long cursor,
+    @RequestParam(name = PARAM_SIZE, defaultValue = SIZE_DEFAULT) int size
   ) {
     log.info("(list by user) comment user id: {}", userId);
 
     size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
-    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE , facade.getCommentsByUserId(userId, size, page));
+
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, facade.getCommentsByUserId(userId, cursor, size));
   }
 
   @GetMapping("/poem/{poemId}")
-  public ResponseGeneral<PageResponse<CommentResponse>> listByPoem(
+  public ResponseGeneral<CursorPageResponse<CommentResponse>> listByPoem(
     @PathVariable Long poemId,
-    @RequestParam(name=PARAM_SIZE, defaultValue =SIZE_DEFAULT) int size,
-    @RequestParam(name = PARAM_PAGE, defaultValue = PAGE_DEFAULT) int page
+    @RequestParam(name = PARAM_CURSOR, required = false) Long cursor,
+    @RequestParam(name = PARAM_SIZE, defaultValue = SIZE_DEFAULT) int size
   ) {
-    log.info("(list by poem) comment poem id: {}", poemId);
+    log.info("(list by poem) comment poem id: {}, cursor: {}, size: {}", poemId, cursor, size);
 
     size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
-    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE , service.getCommentsByPoemId(poemId, size, page));
+
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.getCommentsByPoemId(poemId, cursor, size));
   }
 }

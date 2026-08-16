@@ -1,6 +1,7 @@
 package org.oplearn.project.service;
 
 import org.oplearn.project.dto.response.CommentResponse;
+import org.oplearn.project.dto.response.CursorPageResponse;
 import org.oplearn.project.dto.response.PageResponse;
 import org.oplearn.project.entity.Comment;
 
@@ -13,9 +14,9 @@ public interface CommentService {
 
   CommentResponse detail(Long id);
 
-  PageResponse<CommentResponse> getCommentsByPoemId(Long poemId, int size, int page);
+  CursorPageResponse<CommentResponse> getCommentsByPoemId(Long poemId, Long cursor, int size);
 
-  PageResponse<CommentResponse> getCommentsByUserId(Long userId, int size, int page);
+  CursorPageResponse<CommentResponse> getCommentsByUserId(Long userId, Long cursor, int size);
 
   Comment getAvailableCommentAndThrow(Long id);
 }

@@ -2,6 +2,7 @@ package org.oplearn.project.facade;
 
 import org.oplearn.project.dto.request.CommentRequest;
 import org.oplearn.project.dto.response.CommentResponse;
+import org.oplearn.project.dto.response.CursorPageResponse;
 import org.oplearn.project.dto.response.PageResponse;
 
 public interface CommentFacadeService {
@@ -9,7 +10,7 @@ public interface CommentFacadeService {
 
   CommentResponse update(CommentRequest request, Long id);
 
-  PageResponse<CommentResponse> getCommentsByUserId(Long userId, int size, int page);
+  CursorPageResponse<CommentResponse> getCommentsByUserId(Long userId, Long cursor, int size);
 
   void delete(Long id);
 }

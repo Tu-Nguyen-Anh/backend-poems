@@ -10,5 +10,5 @@ import lombok.*;
 public class CommentWithRepliesResponse {
   private Long commentId;
   private String contentComment;
-  private PageResponse<ReplyItemResponse> replies;
+  private CursorPageResponse<ReplyItemResponse> replies;
 }

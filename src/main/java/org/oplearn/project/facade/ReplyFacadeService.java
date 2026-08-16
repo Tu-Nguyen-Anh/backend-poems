@@ -2,6 +2,7 @@ package org.oplearn.project.facade;
 
 import org.oplearn.project.dto.request.ReplyRequest;
 import org.oplearn.project.dto.response.CommentWithRepliesResponse;
+import org.oplearn.project.dto.response.CursorPageResponse;
 import org.oplearn.project.dto.response.ReplyResponse;
 
 public interface ReplyFacadeService {
@@ -11,5 +12,7 @@ public interface ReplyFacadeService {
 
   void delete(Long id);
 
-  CommentWithRepliesResponse getReplyByCommentId(Long commentId , int size, int page);
+  CommentWithRepliesResponse getReplyByCommentId(Long commentId, Long cursor, int size);
+
+  CursorPageResponse<ReplyResponse> getReplyByUserId(Long userId, Long cursor, int size);
 }

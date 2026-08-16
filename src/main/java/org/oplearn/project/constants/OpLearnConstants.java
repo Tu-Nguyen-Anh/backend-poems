@@ -15,6 +15,7 @@ public class OpLearnConstants {
     public static final String PARAM_STATUS = "status";
     public static final String PARAM_SIZE = "size";
     public static final String PARAM_PAGE = "page";
+    public static final String PARAM_CURSOR = "cursor";
     public static final String PARAM_ALL = "all";
     public static final String PERCENT = "%";
     public static final String MESSAGE_SOURCE = "classpath:i18n/messages";
