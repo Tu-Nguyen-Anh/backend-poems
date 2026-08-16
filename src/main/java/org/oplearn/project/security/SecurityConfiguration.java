@@ -51,6 +51,7 @@ public class SecurityConfiguration {
         .requestMatchers(MATCHER_AUTH_PUBLIC_API).permitAll()
         .requestMatchers(HttpMethod.GET,
           "/api/v1/poems/**",
+          "/api/v1/stories/**",
           "/api/v1/authors/**",
           "/api/v1/genres/**",
           "/api/v1/comments/**",

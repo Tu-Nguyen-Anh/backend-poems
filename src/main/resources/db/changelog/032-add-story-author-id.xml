@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <!--
+    Nối truyện với bảng tác giả dùng chung (gộp với tác giả thơ). Khớp theo tên
+    (không dấu); tác giả chỉ-có-văn được tạo mới trong authors bởi script
+    link_story_authors.py (created_by='vanhoc-import'). Cột này để trang chi tiết
+    tác giả hiển thị cả Thơ lẫn Văn xuôi.
+  -->
+  <changeSet id="032-add-story-author-id" author="claude">
+    <addColumn tableName="stories">
+      <column name="author_id" type="BIGINT">
+        <constraints foreignKeyName="fk_stories_author" references="authors(id)"/>
+      </column>
+    </addColumn>
+    <createIndex tableName="stories" indexName="idx_stories_author">
+      <column name="author_id"/>
+    </createIndex>
+  </changeSet>
+
+</databaseChangeLog>

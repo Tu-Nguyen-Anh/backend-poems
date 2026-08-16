@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <!--
+    Văn xuôi ("Truyện ngắn"): mỗi dòng 1 tác phẩm. Nội dung đọc theo chương nằm ở
+    bảng story_chapters (changelog 031) để tránh tải cả bộ dài (kiếm hiệp/Kim Dung
+    tới ~900k từ) trong 1 request. search_vec = tiêu đề + tác giả (bỏ dấu qua
+    f_unaccent — đã định nghĩa ở changelog 018) cho tìm kiếm không dấu, xếp hạng.
+  -->
+  <changeSet id="030-create-stories" author="claude">
+    <sql>
+      CREATE TABLE stories (
+        id            BIGSERIAL PRIMARY KEY,
+        source_url    TEXT UNIQUE,
+        title         TEXT NOT NULL,
+        author        TEXT,
+        author_url    TEXT,
+        year          INT,
+        genre         TEXT,
+        category      TEXT,
+        collection    TEXT,
+        source        TEXT,
+        type          TEXT,
+        chapter_count INT DEFAULT 0,
+        char_count    INT,
+        word_count    INT,
+        is_deleted    BOOLEAN NOT NULL DEFAULT FALSE,
+        created_at    TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at    TIMESTAMP WITH TIME ZONE,
+        search_vec    tsvector GENERATED ALWAYS AS (
+          to_tsvector('simple', f_unaccent(coalesce(title, '') || ' ' || coalesce(author, '')))
+        ) STORED
+      );
+      CREATE INDEX idx_stories_search_vec ON stories USING gin (search_vec);
+      CREATE INDEX idx_stories_collection ON stories (collection) WHERE is_deleted = false;
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

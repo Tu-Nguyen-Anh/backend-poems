@@ -58,13 +58,14 @@ public class AuthorController {
   @GetMapping
   public ResponseGeneral<PageResponse<AuthorResponse>> list(
     @RequestParam(name = PARAM_KEYWORD, required = false) String keyword,
+    @RequestParam(name = "type", required = false) String type,
     @RequestParam(name = PARAM_SIZE, defaultValue = SIZE_DEFAULT) int size,
     @RequestParam(name = PARAM_PAGE, defaultValue = PAGE_DEFAULT) int page,
     @RequestParam(name = PARAM_ALL, defaultValue = IS_ALL_DEFAULT) boolean isAll
   ) {
     size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
-    log.info("(list) keyword: {}, size: {}, page: {}, isAll: {}", keyword, size, page, isAll);
-    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.list(keyword, size, page, isAll));
+    log.info("(list) keyword: {}, type: {}, size: {}, page: {}, isAll: {}", keyword, type, size, page, isAll);
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.list(keyword, type, size, page, isAll));
   }
 
   @GetMapping("/top")

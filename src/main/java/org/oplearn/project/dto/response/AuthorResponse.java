@@ -22,6 +22,8 @@ public class AuthorResponse {
   String country;
   Integer countryId;
   Long poemCount;
+  /** Số tác phẩm văn xuôi của tác giả (để hiện badge/tab Thơ|Văn). */
+  Long storyCount;
 
   /** Constructor lõi 6 tham số — các constructor khác đều gọi lại constructor này. */
   public AuthorResponse(Long id, String name, Integer birthYear, String achievement, String hometown, Long poemCount) {

@@ -33,5 +33,9 @@
   <include file="db/changelog/026-search-vec-add-poem-translations.xml"/>
   <include file="db/changelog/027-add-comment-reply-cursor-indexes.xml"/>
   <include file="db/changelog/028-add-pushkin-toi-yeu-em.xml"/>
+  <include file="db/changelog/029-add-reply-cursor-index.xml"/>
+  <include file="db/changelog/030-create-table-stories.xml"/>
+  <include file="db/changelog/031-create-table-story-chapters.xml"/>
+  <include file="db/changelog/032-add-story-author-id.xml"/>
 
 </databaseChangeLog>

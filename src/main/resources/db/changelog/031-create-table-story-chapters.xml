@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <!--
+    Chương của một tác phẩm văn xuôi. Bài "single" được nạp thành 1 chương (seq=1).
+    Frontend tải mục lục (không kèm content) ở trang chi tiết, rồi tải từng chương
+    theo (story_id, seq) khi người đọc bấm mở → không lag với bộ dài nhiều chương.
+  -->
+  <changeSet id="031-create-story-chapters" author="claude">
+    <createTable tableName="story_chapters">
+      <column name="id" type="BIGSERIAL">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="story_id" type="BIGINT">
+        <constraints nullable="false"
+                     foreignKeyName="fk_story_chapters_story"
+                     references="stories(id)"/>
+      </column>
+      <column name="seq" type="INT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="title" type="TEXT"/>
+      <column name="char_count" type="INT"/>
+      <column name="word_count" type="INT"/>
+      <column name="content" type="TEXT"/>
+    </createTable>
+
+    <addUniqueConstraint tableName="story_chapters"
+                         columnNames="story_id, seq"
+                         constraintName="uq_story_chapters_story_seq"/>
+    <createIndex tableName="story_chapters" indexName="idx_story_chapters_story">
+      <column name="story_id"/>
+    </createIndex>
+  </changeSet>
+
+</databaseChangeLog>
