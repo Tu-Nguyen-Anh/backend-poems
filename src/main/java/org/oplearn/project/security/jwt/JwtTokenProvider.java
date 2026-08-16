@@ -53,8 +53,20 @@ public class JwtTokenProvider {
     return refreshExpirationMs;
   }
 
+  public String generateAccessToken(String subject, Long userId, List<String> roles) {
+    java.util.Map<String, Object> claims = new java.util.HashMap<>();
+    claims.put(ROLES_CLAIM, roles);
+    claims.put(TOKEN_TYPE_CLAIM, TOKEN_TYPE_ACCESS);
+    if (userId != null) {
+      claims.put("userId", userId);
+      claims.put("id", userId);
+      claims.put("user_id", userId);
+    }
+    return buildToken(subject, claims, expirationMs);
+  }
+
   public String generateAccessToken(String subject, List<String> roles) {
-    return buildToken(subject, Map.of(ROLES_CLAIM, roles, TOKEN_TYPE_CLAIM, TOKEN_TYPE_ACCESS), expirationMs);
+    return generateAccessToken(subject, null, roles);
   }
 
   public String generateRefreshToken(String subject) {

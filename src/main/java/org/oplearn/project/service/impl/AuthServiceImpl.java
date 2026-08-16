@@ -121,7 +121,7 @@ public class AuthServiceImpl implements AuthService {
   }
 
   private TokenResponse issueTokens(User user) {
-    String accessToken = jwtTokenProvider.generateAccessToken(user.getUsername(), List.of(user.getRole().name()));
+    String accessToken = jwtTokenProvider.generateAccessToken(user.getUsername(), user.getId(), List.of(user.getRole().name()));
     String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUsername());
 
     String refreshTokenId = jwtTokenProvider.parseClaims(refreshToken).getId();
