@@ -4,6 +4,8 @@ import org.oplearn.project.dto.response.PageResponse;
 import org.oplearn.project.dto.response.PoemResponse;
 import org.oplearn.project.entity.Poem;
 
+import java.util.List;
+
 public interface PoemService {
   PageResponse<PoemResponse> list(String keyword, Long genreId, String era, String language, int size, int page);
 
@@ -25,7 +27,7 @@ public interface PoemService {
 
   PageResponse<PoemResponse> listPoemLatest(int size, int page);
 
-  PageResponse<PoemResponse> random();
+  PageResponse<PoemResponse> randomPersonalized(List<Long> authorIds, List<Long> genreIds, List<String> eras);
 
   org.oplearn.project.dto.response.StatsResponse getStats();
 

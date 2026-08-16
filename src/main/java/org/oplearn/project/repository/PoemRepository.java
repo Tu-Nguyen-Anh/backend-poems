@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PoemRepository extends JpaRepository<Poem, Long> {
@@ -100,18 +101,18 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
           p.id
     """,
     countQuery = """
-        SELECT count(*)
-        FROM poems p
-        LEFT JOIN authors a ON a.id = p.author_id
-        WHERE p.is_deleted = false
-          AND (CAST(:genreId AS bigint) IS NULL OR p.genre_id = CAST(:genreId AS bigint))
-          AND (CAST(:era AS text) IS NULL OR p.era = CAST(:era AS text))
-          AND (CAST(:language AS text) IS NULL OR p.language = CAST(:language AS text))
-          AND (
-            p.search_vec @@ websearch_to_tsquery('simple', f_unaccent(:keyword))
-            OR f_unaccent(lower(p.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%'
-          )
-    """,
+          SELECT count(*)
+          FROM poems p
+          LEFT JOIN authors a ON a.id = p.author_id
+          WHERE p.is_deleted = false
+            AND (CAST(:genreId AS bigint) IS NULL OR p.genre_id = CAST(:genreId AS bigint))
+            AND (CAST(:era AS text) IS NULL OR p.era = CAST(:era AS text))
+            AND (CAST(:language AS text) IS NULL OR p.language = CAST(:language AS text))
+            AND (
+              p.search_vec @@ websearch_to_tsquery('simple', f_unaccent(:keyword))
+              OR f_unaccent(lower(p.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%'
+            )
+      """,
     nativeQuery = true)
   Page<PoemSearchRow> search(
     @Param("keyword") String keyword,
@@ -120,22 +121,36 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
     @Param("language") String language,
     Pageable pageable);
 
-  /** Projection cho native search — alias trong query khớp tên getter. */
+  /**
+   * Projection cho native search — alias trong query khớp tên getter.
+   */
   interface PoemSearchRow {
     Long getId();
+
     String getName();
+
     String getDescription();
+
     Integer getYear();
+
     String getContent();
+
     String getTransliteration();
+
     String getTranslation();
+
     String getLanguage();
+
     String getEra();
+
     String getGenreName();
+
     String getAuthorName();
   }
 
-  /** Danh sách thời kỳ (era) đang có, xếp theo số bài giảm dần — cho bộ lọc. */
+  /**
+   * Danh sách thời kỳ (era) đang có, xếp theo số bài giảm dần — cho bộ lọc.
+   */
   @Query(value = """
       SELECT era FROM poems
       WHERE is_deleted = false AND era IS NOT NULL AND btrim(era) <> ''
@@ -143,7 +158,9 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
     """, nativeQuery = true)
   java.util.List<String> findDistinctEras();
 
-  /** Danh sách ngôn ngữ (Việt/Hán…) đang có, xếp theo số bài giảm dần. */
+  /**
+   * Danh sách ngôn ngữ (Việt/Hán…) đang có, xếp theo số bài giảm dần.
+   */
   @Query(value = """
       SELECT language FROM poems
       WHERE is_deleted = false AND language IS NOT NULL AND btrim(language) <> ''
@@ -158,14 +175,20 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
    * lazy-load: mở nhánh nào mới gọi truy vấn đó. Bài thiếu era/genre gom
    * vào rổ '(Chưa phân loại)' (era) hoặc genre_id = -1 để không mất bài. */
 
-  /** Projection cho nhánh cây: id (genre/author) hoặc null, nhãn, số bài. */
+  /**
+   * Projection cho nhánh cây: id (genre/author) hoặc null, nhãn, số bài.
+   */
   interface FacetCount {
     Long getId();
+
     String getLabel();
+
     Long getCount();
   }
 
-  /** Cấp 1: các ngôn ngữ (Việt/Hán…) + số bài. */
+  /**
+   * Cấp 1: các ngôn ngữ (Việt/Hán…) + số bài.
+   */
   @Query(value = """
       SELECT NULL AS id, language AS label, count(*) AS count
       FROM poems
@@ -175,7 +198,9 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
     """, nativeQuery = true)
   java.util.List<FacetCount> facetLanguages();
 
-  /** Cấp 2: các thời kỳ trong 1 ngôn ngữ + số bài (null → '(Chưa phân loại)'). */
+  /**
+   * Cấp 2: các thời kỳ trong 1 ngôn ngữ + số bài (null → '(Chưa phân loại)').
+   */
   @Query(value = """
       SELECT NULL AS id, COALESCE(NULLIF(btrim(era), ''), '(Chưa phân loại)') AS label, count(*) AS count
       FROM poems
@@ -185,7 +210,9 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
     """, nativeQuery = true)
   java.util.List<FacetCount> facetEras(@Param("language") String language);
 
-  /** Cấp 3: các thể thơ trong ngôn ngữ + thời kỳ + số bài (null genre → id = -1). */
+  /**
+   * Cấp 3: các thể thơ trong ngôn ngữ + thời kỳ + số bài (null genre → id = -1).
+   */
   @Query(value = """
       SELECT COALESCE(g.id, -1) AS id, COALESCE(g.name, '(Chưa phân loại)') AS label, count(*) AS count
       FROM poems p
@@ -197,7 +224,9 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
     """, nativeQuery = true)
   java.util.List<FacetCount> facetGenres(@Param("language") String language, @Param("era") String era);
 
-  /** Cấp 4: các tác giả trong ngôn ngữ + thời kỳ + thể thơ + số bài. */
+  /**
+   * Cấp 4: các tác giả trong ngôn ngữ + thời kỳ + thể thơ + số bài.
+   */
   @Query(value = """
       SELECT a.id AS id, a.name AS label, count(*) AS count
       FROM poems p
@@ -210,7 +239,9 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
     """, nativeQuery = true)
   java.util.List<FacetCount> facetAuthors(@Param("language") String language, @Param("era") String era, @Param("genreId") Long genreId);
 
-  /** Cấp lá: danh sách bài theo đường dẫn (tham số nào null thì bỏ lọc chiều đó). */
+  /**
+   * Cấp lá: danh sách bài theo đường dẫn (tham số nào null thì bỏ lọc chiều đó).
+   */
   @Query(value = """
       SELECT p.id AS "id", p.name AS "name", p.description AS "description",
              p.year AS "year", p.content AS "content",
@@ -236,17 +267,17 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
         lower(p.name), p.id
     """,
     countQuery = """
-      SELECT count(*)
-      FROM poems p
-      WHERE p.is_deleted = false
-        AND (CAST(:language AS text) IS NULL OR p.language = CAST(:language AS text))
-        AND (CAST(:era AS text) IS NULL OR COALESCE(NULLIF(btrim(p.era), ''), '(Chưa phân loại)') = CAST(:era AS text))
-        AND (CAST(:genreId AS bigint) IS NULL OR COALESCE(p.genre_id, -1) = CAST(:genreId AS bigint))
-        AND (CAST(:authorId AS bigint) IS NULL OR p.author_id = CAST(:authorId AS bigint))
-        AND (CAST(:keyword AS text) IS NULL
-             OR p.search_vec @@ websearch_to_tsquery('simple', f_unaccent(CAST(:keyword AS text)))
-             OR f_unaccent(lower(p.name)) LIKE '%' || f_unaccent(lower(CAST(:keyword AS text))) || '%')
-    """,
+        SELECT count(*)
+        FROM poems p
+        WHERE p.is_deleted = false
+          AND (CAST(:language AS text) IS NULL OR p.language = CAST(:language AS text))
+          AND (CAST(:era AS text) IS NULL OR COALESCE(NULLIF(btrim(p.era), ''), '(Chưa phân loại)') = CAST(:era AS text))
+          AND (CAST(:genreId AS bigint) IS NULL OR COALESCE(p.genre_id, -1) = CAST(:genreId AS bigint))
+          AND (CAST(:authorId AS bigint) IS NULL OR p.author_id = CAST(:authorId AS bigint))
+          AND (CAST(:keyword AS text) IS NULL
+               OR p.search_vec @@ websearch_to_tsquery('simple', f_unaccent(CAST(:keyword AS text)))
+               OR f_unaccent(lower(p.name)) LIKE '%' || f_unaccent(lower(CAST(:keyword AS text))) || '%')
+      """,
     nativeQuery = true)
   Page<PoemSearchRow> browse(
     @Param("language") String language,
@@ -284,26 +315,37 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
         LEFT JOIN Genre g ON p.genreId = g.id
         WHERE p.isDeleted = false
     """)
-  // List (không phải Page): Spring áp LIMIT/OFFSET + sort từ Pageable nhưng KHÔNG
-  // chạy count(*) — count toàn bảng là seq scan, tốn nhất trên trang chủ (>100k dòng).
+    // List (không phải Page): Spring áp LIMIT/OFFSET + sort từ Pageable nhưng KHÔNG
+    // chạy count(*) — count toàn bảng là seq scan, tốn nhất trên trang chủ (>100k dòng).
   java.util.List<PoemResponse> findLatest(Pageable pageable);
 
-  /** Đếm bài còn hiển thị. Gọi qua cache TTL ở service, không đếm mỗi request. */
+  /**
+   * Đếm bài còn hiển thị. Gọi qua cache TTL ở service, không đếm mỗi request.
+   */
   @Query("SELECT count(p) FROM Poem p WHERE p.isDeleted = false")
   long countActive();
 
-  /** Projection cho thống kê trang chủ — alias khớp tên getter. */
+  /**
+   * Projection cho thống kê trang chủ — alias khớp tên getter.
+   */
   interface StatsRow {
     long getTotalPoems();
+
     long getTotalAuthors();
+
     long getTotalCountries();
+
     long getVietCount();
+
     long getHanCount();
+
     long getForeignCount();
   }
 
-  /** Thống kê tổng quan 1 lượt (đếm bài theo nhóm ngôn ngữ/quốc gia tác giả).
-   *  Nặng (JOIN + FILTER toàn bảng) → gọi qua cache TTL ở service. */
+  /**
+   * Thống kê tổng quan 1 lượt (đếm bài theo nhóm ngôn ngữ/quốc gia tác giả).
+   * Nặng (JOIN + FILTER toàn bảng) → gọi qua cache TTL ở service.
+   */
   @Query(value = """
       SELECT
         (SELECT count(*) FROM poems WHERE is_deleted = false) AS "totalPoems",
@@ -319,10 +361,28 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
     """, nativeQuery = true)
   StatsRow getStats();
 
-  /** Bốc id ngẫu nhiên trước (chỉ sort cột id, không kéo content) — rẻ hơn
-   *  nhiều so với ORDER BY random() trên cả dòng có nội dung bài thơ. */
+  /**
+   * Bốc id ngẫu nhiên trước (chỉ sort cột id, không kéo content) — rẻ hơn
+   * nhiều so với ORDER BY random() trên cả dòng có nội dung bài thơ.
+   */
   @Query(value = "SELECT id FROM poems WHERE is_deleted = false ORDER BY random() LIMIT :n", nativeQuery = true)
   java.util.List<Long> findRandomIds(@Param("n") int n);
+
+  @Query(value = """
+    SELECT id FROM poems
+    WHERE is_deleted = false
+      AND (CAST(:authorIds AS bigint[]) IS NULL OR author_id = ANY(CAST(:authorIds AS bigint[])))
+      AND (CAST(:genreIds AS bigint[]) IS NULL OR genre_id  = ANY(CAST(:genreIds AS bigint[])))
+      AND (CAST(:eras AS text[]) IS NULL OR era = ANY(CAST(:eras AS text[])))
+    ORDER BY random()
+    LIMIT :n
+    """, nativeQuery = true)
+  List<Long> findPersonalizedRandomIds(
+    @Param("authorIds") Long[] authorIds,
+    @Param("genreIds") Long[] genreIds,
+    @Param("eras") String[] eras,
+    @Param("n") int n
+  );
 
   @Query("""
     SELECT new org.oplearn.project.dto.response.PoemResponse(
