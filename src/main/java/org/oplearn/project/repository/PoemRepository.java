@@ -39,6 +39,8 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
 
   Optional<Poem> findByIdAndIsDeletedFalse(Long id);
 
+  long countByAuthorIdAndIsDeletedFalse(Long authorId);
+
   @Query("""
         SELECT new org.oplearn.project.dto.response.PoemResponse(
             p.id,

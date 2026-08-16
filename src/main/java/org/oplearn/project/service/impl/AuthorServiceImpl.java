@@ -10,6 +10,8 @@ import org.oplearn.project.entity.Author;
 import org.oplearn.project.exception.AuthorNameAlreadyExistedException;
 import org.oplearn.project.exception.AuthorNotFoundException;
 import org.oplearn.project.repository.AuthorRepository;
+import org.oplearn.project.repository.PoemRepository;
+import org.oplearn.project.repository.StoryRepository;
 import org.oplearn.project.service.AuthorService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +24,8 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class AuthorServiceImpl implements AuthorService {
   private final AuthorRepository repository;
+  private final PoemRepository poemRepository;
+  private final StoryRepository storyRepository;
 
   public AuthorResponse create(AuthorRequest request) {
     log.info("(Service) create author");
@@ -72,26 +76,44 @@ public class AuthorServiceImpl implements AuthorService {
   public AuthorResponse detail(Long id) {
     log.info("(Service) detail author");
 
-    return repository.findByIdAndIsDeletedFalse(id)
-      .map(AuthorResponse::from)
+    Author author = repository.findByIdAndIsDeletedFalse(id)
       .orElseThrow(AuthorNotFoundException::new);
+    AuthorResponse response = AuthorResponse.from(author);
+    response.setPoemCount(poemRepository.countByAuthorIdAndIsDeletedFalse(id));
+    response.setStoryCount(storyRepository.countByAuthorIdAndIsDeletedFalse(id));
+    return response;
   }
 
-  public PageResponse<AuthorResponse> list(String keyword, int size, int page, boolean isAll) {
-    log.info("Service) list author");
+  public PageResponse<AuthorResponse> list(String keyword, String type, int size, int page, boolean isAll) {
+    log.info("(Service) list author keyword: {}, type: {}", keyword, type);
 
     Pageable pageable = isAll
       ? PageRequest.of(0, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_ALL_SIZE)
       : PageRequest.of(page, size);
 
-    Page<Author> authors = StringUtils.hasText(keyword)
-      ? repository.search(keyword, pageable)
-      : repository.findAllOrderByCountryAndPoemCount(pageable);
+    String kw = StringUtils.hasText(keyword) ? keyword.trim() : null;
+    String ty = ("poem".equals(type) || "story".equals(type)) ? type : null;
+
+    Page<AuthorRepository.AuthorListRow> authors = repository.listWithCounts(kw, ty, pageable);
 
     return PageResponse.of(
-      authors.map(AuthorResponse::from).getContent(),
+      authors.map(AuthorServiceImpl::toResponse).getContent(),
       (int) authors.getTotalElements()
     );
+  }
+
+  private static AuthorResponse toResponse(AuthorRepository.AuthorListRow row) {
+    AuthorResponse r = new AuthorResponse(
+      row.getId(), row.getName(), row.getBirthYear(), row.getAchievement(), row.getHometown()
+    );
+    r.setAvatarUrl(row.getAvatarUrl());
+    r.setAvatarLocal(row.getAvatarLocal());
+    r.setBio(row.getBio());
+    r.setCountry(row.getCountry());
+    r.setCountryId(row.getCountryId());
+    r.setPoemCount(row.getPoemCount());
+    r.setStoryCount(row.getStoryCount());
+    return r;
   }
 
   /** Cache in-memory cho widget "tác giả tiêu biểu" trang chủ — query GROUP BY

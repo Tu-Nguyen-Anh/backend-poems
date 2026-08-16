@@ -61,6 +61,83 @@ public interface AuthorRepository extends JpaRepository<Author, Long> {
     nativeQuery = true)
   Page<Author> search(@Param("keyword") String keyword, Pageable pageable);
 
+  /**
+   * Danh sách tác giả kèm SỐ BÀI THƠ + SỐ TÁC PHẨM VĂN, hỗ trợ tìm không dấu và
+   * lọc theo loại: type='poem' (chỉ tác giả có thơ), 'story' (có văn), null (tất cả).
+   * Xếp: quốc gia (VN→CN→khác), rồi số tác phẩm theo loại đang lọc (mặc định tổng) giảm dần.
+   */
+  @Query(value = """
+      SELECT a.id AS "id", a.name AS "name", a.birth_year AS "birthYear",
+             a.achievement AS "achievement", a.hometown AS "hometown",
+             a.avatar_url AS "avatarUrl", a.avatar_local AS "avatarLocal",
+             a.bio AS "bio", a.country AS "country", a.country_id AS "countryId",
+             COUNT(DISTINCT p.id) AS "poemCount", COUNT(DISTINCT s.id) AS "storyCount"
+      FROM authors a
+      LEFT JOIN poems p ON p.author_id = a.id AND p.is_deleted = false
+      LEFT JOIN stories s ON s.author_id = a.id AND s.is_deleted = false
+      WHERE a.is_deleted = false
+        AND (CAST(:keyword AS text) IS NULL
+             OR f_unaccent(lower(a.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%')
+      GROUP BY a.id
+      HAVING (CAST(:type AS text) IS NULL
+              OR (:type = 'poem' AND COUNT(DISTINCT p.id) > 0)
+              OR (:type = 'story' AND COUNT(DISTINCT s.id) > 0))
+      ORDER BY
+        CASE WHEN CAST(:keyword AS text) IS NOT NULL
+                  AND f_unaccent(lower(a.name)) = f_unaccent(lower(:keyword)) THEN 0 ELSE 1 END,
+        CASE a.country_id WHEN 2 THEN 0 WHEN 3 THEN 1 ELSE 2 END,
+        (CASE WHEN :type = 'story' THEN COUNT(DISTINCT s.id)
+              WHEN :type = 'poem' THEN COUNT(DISTINCT p.id)
+              ELSE COUNT(DISTINCT p.id) + COUNT(DISTINCT s.id) END) DESC,
+        a.name
+    """,
+    countQuery = """
+      SELECT count(*) FROM (
+        SELECT a.id
+        FROM authors a
+        LEFT JOIN poems p ON p.author_id = a.id AND p.is_deleted = false
+        LEFT JOIN stories s ON s.author_id = a.id AND s.is_deleted = false
+        WHERE a.is_deleted = false
+          AND (CAST(:keyword AS text) IS NULL
+               OR f_unaccent(lower(a.name)) LIKE '%' || f_unaccent(lower(:keyword)) || '%')
+        GROUP BY a.id
+        HAVING (CAST(:type AS text) IS NULL
+                OR (:type = 'poem' AND COUNT(DISTINCT p.id) > 0)
+                OR (:type = 'story' AND COUNT(DISTINCT s.id) > 0))
+      ) t
+    """,
+    nativeQuery = true)
+  Page<AuthorListRow> listWithCounts(@Param("keyword") String keyword,
+                                     @Param("type") String type,
+                                     Pageable pageable);
+
+  /** Projection native — alias khớp tên getter. */
+  interface AuthorListRow {
+    Long getId();
+
+    String getName();
+
+    Integer getBirthYear();
+
+    String getAchievement();
+
+    String getHometown();
+
+    String getAvatarUrl();
+
+    String getAvatarLocal();
+
+    String getBio();
+
+    String getCountry();
+
+    Integer getCountryId();
+
+    Long getPoemCount();
+
+    Long getStoryCount();
+  }
+
   @Transactional
   @Modifying
   @Query("update Author a set a.isDeleted = true where a.id = :id and a.isDeleted = false")
