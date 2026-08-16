@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <changeSet id="027-comments-poem-id-cursor" author="hazi">
+    <sql>CREATE INDEX IF NOT EXISTS idx_comments_poem_id_cursor ON comments (poem_id, id DESC) WHERE is_deleted = false</sql>
+  </changeSet>
+
+  <changeSet id="027-comments-user-id-cursor" author="hazi">
+    <sql>CREATE INDEX IF NOT EXISTS idx_comments_user_id_cursor ON comments (user_id, id DESC) WHERE is_deleted = false</sql>
+  </changeSet>
+
+  <changeSet id="027-replies-comment-id-cursor" author="hazi">
+    <sql>CREATE INDEX IF NOT EXISTS idx_replies_comment_id_cursor ON replies (comment_id, id ASC) WHERE is_deleted = false</sql>
+  </changeSet>
+
+</databaseChangeLog>

@@ -9,7 +9,7 @@
   <!-- Bổ sung bài "Tôi yêu em" (Я вас любил) của Pushkin (author_id=1684) — crawl
        thivien bị sót. Kèm bản dịch chuẩn SGK của Thuý Toàn. Idempotent: bỏ qua nếu
        đã có. search_vec tự cập nhật qua trigger (khớp theo tên bài "Tôi yêu em"). -->
-  <changeSet id="027-add-pushkin-toi-yeu-em" author="claude">
+  <changeSet id="028-add-pushkin-toi-yeu-em" author="claude">
     <sql splitStatements="false"><![CDATA[
       DO $$
       DECLARE new_id bigint;

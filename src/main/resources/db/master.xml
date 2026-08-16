@@ -1,36 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
-        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                             http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <include file="db/changelog/001-create-table-enum.xml"/>
-    <include file="db/changelog/002-create-table-users.xml"/>
-    <include file="db/changelog/003-create-table-tokens.xml"/>
-    <include file="db/changelog/004-create-table-genres.xml"/>
-    <include file="db/changelog/005-create-table-authors.xml"/>
-    <include file="db/changelog/006-create-table-poems.xml"/>
-    <include file="db/changelog/007-create-table-comments.xml"/>
-    <include file="db/changelog/008-create-table-replies.xml"/>
-    <include file="db/changelog/009-create-table-feedbacks.xml"/>
-    <include file="db/changelog/010-drop-table-tokens.xml"/>
-    <include file="db/changelog/011-add-created-at-to-genres.xml"/>
-    <include file="db/changelog/012-add-poem-search-index.xml"/>
-    <include file="db/changelog/013-add-translations.xml"/>
-    <include file="db/changelog/014-add-source-url.xml"/>
-    <include file="db/changelog/015-add-poem-fulltext.xml"/>
-    <include file="db/changelog/016-add-homepage-indexes.xml"/>
-    <include file="db/changelog/017-add-poem-era.xml"/>
-    <include file="db/changelog/018-search-unaccent.xml"/>
-    <include file="db/changelog/019-search-author-in-vec.xml"/>
-    <include file="db/changelog/020-add-author-avatar-bio.xml"/>
-    <include file="db/changelog/021-create-table-favorites.xml"/>
-    <include file="db/changelog/022-create-table-poem-highlights.xml"/>
-    <include file="db/changelog/023-add-author-avatar-local.xml"/>
-    <include file="db/changelog/024-add-author-country.xml"/>
-    <include file="db/changelog/025-search-vec-add-translations.xml"/>
-    <include file="db/changelog/026-search-vec-add-poem-translations.xml"/>
-    <include file="db/changelog/027-add-pushkin-toi-yeu-em.xml"/>
+  <include file="db/changelog/001-create-table-enum.xml"/>
+  <include file="db/changelog/002-create-table-users.xml"/>
+  <include file="db/changelog/003-create-table-tokens.xml"/>
+  <include file="db/changelog/004-create-table-genres.xml"/>
+  <include file="db/changelog/005-create-table-authors.xml"/>
+  <include file="db/changelog/006-create-table-poems.xml"/>
+  <include file="db/changelog/007-create-table-comments.xml"/>
+  <include file="db/changelog/008-create-table-replies.xml"/>
+  <include file="db/changelog/009-create-table-feedbacks.xml"/>
+  <include file="db/changelog/010-drop-table-tokens.xml"/>
+  <include file="db/changelog/011-add-created-at-to-genres.xml"/>
+  <include file="db/changelog/012-add-poem-search-index.xml"/>
+  <include file="db/changelog/013-add-translations.xml"/>
+  <include file="db/changelog/014-add-source-url.xml"/>
+  <include file="db/changelog/015-add-poem-fulltext.xml"/>
+  <include file="db/changelog/016-add-homepage-indexes.xml"/>
+  <include file="db/changelog/017-add-poem-era.xml"/>
+  <include file="db/changelog/018-search-unaccent.xml"/>
+  <include file="db/changelog/019-search-author-in-vec.xml"/>
+  <include file="db/changelog/020-add-author-avatar-bio.xml"/>
+  <include file="db/changelog/021-create-table-favorites.xml"/>
+  <include file="db/changelog/022-create-table-poem-highlights.xml"/>
+  <include file="db/changelog/023-add-author-avatar-local.xml"/>
+  <include file="db/changelog/024-add-author-country.xml"/>
+  <include file="db/changelog/025-search-vec-add-translations.xml"/>
+  <include file="db/changelog/026-search-vec-add-poem-translations.xml"/>
+  <include file="db/changelog/027-add-comment-reply-cursor-indexes.xml"/>
+  <include file="db/changelog/028-add-pushkin-toi-yeu-em.xml"/>
 
 </databaseChangeLog>
