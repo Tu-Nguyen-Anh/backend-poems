@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oplearn.project.dto.request.ReplyRequest;
 import org.oplearn.project.dto.response.CommentWithRepliesResponse;
-import org.oplearn.project.dto.response.PageResponse;
+import org.oplearn.project.dto.response.CursorPageResponse;
 import org.oplearn.project.dto.response.ReplyItemResponse;
 import org.oplearn.project.dto.response.ReplyResponse;
 import org.oplearn.project.entity.Comment;
@@ -66,12 +66,12 @@ public class ReplyFacadeServiceImpl implements ReplyFacadeService {
     boolean isAdmin = authentication.getAuthorities().stream()
       .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-    if(!isAdmin && !currentUser.getId().equals(existingReply.getUserId())) {
+    if (!isAdmin && !currentUser.getId().equals(existingReply.getUserId())) {
       log.warn("(update) user not authorized");
       throw new UserUnauthorizedException();
     }
 
-    Reply updatedReply = replyService.update(id , request.getContent());
+    Reply updatedReply = replyService.update(id, request.getContent());
 
     return ReplyResponse.from(
       updatedReply,
@@ -94,7 +94,7 @@ public class ReplyFacadeServiceImpl implements ReplyFacadeService {
     boolean isAdmin = authentication.getAuthorities().stream()
       .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-    if(!isAdmin && !currentUser.getId().equals(existingReply.getUserId())) {
+    if (!isAdmin && !currentUser.getId().equals(existingReply.getUserId())) {
       log.warn("(delete) user not authorized");
       throw new UserUnauthorizedException();
     }
@@ -102,17 +102,25 @@ public class ReplyFacadeServiceImpl implements ReplyFacadeService {
     replyService.delete(id);
   }
 
-  public CommentWithRepliesResponse getReplyByCommentId(Long commentId , int size, int page) {
+  public CommentWithRepliesResponse getReplyByCommentId(Long commentId, Long cursor, int size) {
     log.info("(facade) get reply by comment id = {}", commentId);
 
     Comment comment = commentService.getAvailableCommentAndThrow(commentId);
 
-    PageResponse<ReplyItemResponse> repliesResponse = replyService.getReplyByCommentId(commentId, size, page);
+    CursorPageResponse<ReplyItemResponse> repliesResponse = replyService.getReplyByCommentId(commentId, cursor, size);
 
     return CommentWithRepliesResponse.builder()
       .commentId(comment.getId())
       .contentComment(comment.getContent())
       .replies(repliesResponse)
       .build();
+  }
+
+  public CursorPageResponse<ReplyResponse> getReplyByUserId(Long userId, Long cursor, int size) {
+    log.info("(facade) get reply by user id = {}", userId);
+
+    userService.getAvailableUserAndThrow(userId);
+
+    return replyService.getReplyByUserId(userId, cursor, size);
   }
 }

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oplearn.project.dto.request.ReplyRequest;
 import org.oplearn.project.dto.response.CommentWithRepliesResponse;
+import org.oplearn.project.dto.response.CursorPageResponse;
 import org.oplearn.project.dto.response.ReplyResponse;
 import org.oplearn.project.dto.response.ResponseGeneral;
 import org.oplearn.project.facade.ReplyFacadeService;
@@ -12,8 +13,6 @@ import org.oplearn.project.service.ReplyService;
 import org.springframework.web.bind.annotation.*;
 
 import static org.oplearn.project.constants.OpLearnConstants.CommonConstants.*;
-import static org.oplearn.project.constants.OpLearnConstants.CommonConstants.PARAM_PAGE;
-import static org.oplearn.project.constants.OpLearnConstants.VariableConstant.PAGE_DEFAULT;
 import static org.oplearn.project.constants.OpLearnConstants.VariableConstant.SIZE_DEFAULT;
 
 @RestController
@@ -57,12 +56,24 @@ public class ReplyController {
   @GetMapping("/comment/{commentId}")
   public ResponseGeneral<CommentWithRepliesResponse> getByCommentId(
     @PathVariable Long commentId,
-    @RequestParam(name=PARAM_SIZE, defaultValue =SIZE_DEFAULT) int size,
-    @RequestParam(name = PARAM_PAGE, defaultValue = PAGE_DEFAULT) int page
+    @RequestParam(name = PARAM_SIZE, defaultValue = SIZE_DEFAULT) int size,
+    @RequestParam(name = PARAM_CURSOR, required = false) Long cursor
   ) {
     log.info("(list by comment id) comment id: {}", commentId);
 
     size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
-    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE , facade.getReplyByCommentId(commentId, size, page));
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, facade.getReplyByCommentId(commentId, cursor, size));
+  }
+
+  @GetMapping("/user/{userId}")
+  public ResponseGeneral<CursorPageResponse<ReplyResponse>> getByUserId(
+    @PathVariable Long userId,
+    @RequestParam(name = PARAM_SIZE, defaultValue = SIZE_DEFAULT) int size,
+    @RequestParam(name = PARAM_CURSOR, required = false) Long cursor
+  ) {
+    log.info("(list by user id) user id: {}", userId);
+
+    size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, facade.getReplyByUserId(userId, cursor, size));
   }
 }
