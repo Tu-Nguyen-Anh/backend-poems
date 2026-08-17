@@ -1,5 +1,6 @@
 package org.oplearn.project.repository;
 
+import org.oplearn.project.entity.AuthProvider;
 import org.oplearn.project.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
   boolean existsByEmailAndIsDeletedFalse(String email);
 
   Page<User> findAllByIsDeletedFalse(Pageable pageable);
+
+  Optional<User> findByEmailAndIsDeletedFalse(String email);
+
+  Optional<User> findByProviderAndProviderIdAndIsDeletedFalse(AuthProvider provider, String providerId);
 
   @Query("""
         select u from User u

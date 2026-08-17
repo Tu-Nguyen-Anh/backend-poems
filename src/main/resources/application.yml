@@ -21,7 +21,7 @@ spring:
     change-log: classpath:db/master.xml
 
 server:
-  port: ${PORT:8089}
+  port: ${PORT:8090}
 
 app:
   seo:
@@ -54,3 +54,5 @@ aws:
     secret-key: ${AWS_S3_SECRET_KEY:minioadmin}
     bucket-name: ${AWS_S3_BUCKET_NAME:poems-media}
 
+google:
+  client-id: ${GOOGLE_CLIENT_ID:772102149835-vgiaigbr51untf545i1n8a4rsmv7r0tb.apps.googleusercontent.com}

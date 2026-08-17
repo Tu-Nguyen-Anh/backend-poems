@@ -37,5 +37,6 @@
   <include file="db/changelog/030-create-table-stories.xml"/>
   <include file="db/changelog/031-create-table-story-chapters.xml"/>
   <include file="db/changelog/032-add-story-author-id.xml"/>
+  <include file="db/changelog/033-add-user-oauth-provider.xml"/>
 
 </databaseChangeLog>

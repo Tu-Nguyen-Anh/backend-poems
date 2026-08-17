@@ -24,3 +24,7 @@ security:
     refresh-expiration-ms: 604800000
   cors:
     allowed-origins: "*"
+
+google:
+  client-id: test-google-client-id
+
