@@ -1,12 +1,18 @@
 package org.oplearn.project.service.impl;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.oplearn.project.dto.request.GoogleLoginRequest;
 import org.oplearn.project.dto.request.LoginRequest;
 import org.oplearn.project.dto.request.RegisterRequest;
 import org.oplearn.project.dto.response.TokenResponse;
+import org.oplearn.project.entity.AuthProvider;
 import org.oplearn.project.entity.User;
 import org.oplearn.project.entity.UserRole;
 import org.oplearn.project.exception.EmailAlreadyExistedException;
@@ -17,6 +23,7 @@ import org.oplearn.project.repository.UserRepository;
 import org.oplearn.project.repository.redis.TokenRedisRepository;
 import org.oplearn.project.security.jwt.JwtTokenProvider;
 import org.oplearn.project.service.AuthService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -31,6 +38,9 @@ import static org.oplearn.project.constants.OpLearnConstants.AuthConstant.TYPE_T
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+  @Value("${google.client-id:}")
+  private String googleClientId;
+
   private final UserRepository userRepository;
   private final TokenRedisRepository tokenRedisRepository;
   private final JwtTokenProvider jwtTokenProvider;
@@ -95,6 +105,64 @@ public class AuthServiceImpl implements AuthService {
     if (StringUtils.hasText(accessToken)) {
       blacklistAccessToken(accessToken);
     }
+  }
+
+  @Override
+  public TokenResponse loginWithGoogle(GoogleLoginRequest request) {
+    GoogleIdToken.Payload payload = verifyGoogleToken(request.getToken());
+    String email = payload.getEmail();
+    String googleUserId = payload.getSubject();
+
+    User user = userRepository.findByProviderAndProviderIdAndIsDeletedFalse(AuthProvider.GOOGLE, googleUserId)
+      .or(() -> userRepository.findByEmailAndIsDeletedFalse(email))
+      .orElseGet(() -> {
+        // 3. Nếu chưa có -> Tự động đăng ký User mới
+        String username = generateUniqueUsername(email, googleUserId);
+        User newUser = User.builder()
+          .username(username)
+          .email(email)
+          .role(UserRole.USER)
+          .provider(AuthProvider.GOOGLE)
+          .providerId(googleUserId)
+          .build();
+        return userRepository.save(newUser);
+  });
+    return issueTokens(user);
+  }
+
+  private GoogleIdToken.Payload verifyGoogleToken(String idTokenString) {
+    try {
+      GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+        new NetHttpTransport(), GsonFactory.getDefaultInstance())
+        .setAudience(List.of(googleClientId))
+        .build();
+
+      GoogleIdToken idToken = verifier.verify(idTokenString);
+      if (idToken == null) {
+        throw new InvalidCredentialException();
+      }
+      return idToken.getPayload();
+    } catch (Exception e) {
+      log.error("(verifyGoogleToken) error: {}", e.getMessage());
+      throw new InvalidCredentialException();
+    }
+  }
+
+  private String generateUniqueUsername(String email, String googleUserId) {
+    String baseUsername = (email != null && email.contains("@"))
+      ? email.substring(0, email.indexOf("@")).replaceAll("[^a-zA-Z0-9_.]", "")
+      : "google_user";
+
+    if (baseUsername.length() > 40) {
+      baseUsername = baseUsername.substring(0, 40);
+    }
+
+    String username = baseUsername;
+    int suffix = 1;
+    while (userRepository.existsByUsernameAndIsDeletedFalse(username)) {
+      username = baseUsername + "_" + suffix++;
+    }
+    return username;
   }
 
   private Claims parseRefreshTokenClaims(String refreshToken) {

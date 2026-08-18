@@ -3,6 +3,7 @@ package org.oplearn.project.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.oplearn.project.dto.request.GoogleLoginRequest;
 import org.oplearn.project.dto.request.LoginRequest;
 import org.oplearn.project.dto.request.RefreshTokenRequest;
 import org.oplearn.project.dto.request.RegisterRequest;
@@ -61,5 +62,11 @@ public class AuthController {
       return null;
     }
     return authorizationHeader.substring(TYPE_TOKEN.length());
+  }
+
+  @PostMapping("/login/google")
+  public ResponseGeneral<TokenResponse> loginWithGoogle(@Valid @RequestBody GoogleLoginRequest request) {
+    log.info("(loginWithGoogle)");
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.loginWithGoogle(request));
   }
 }

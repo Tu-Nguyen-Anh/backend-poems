@@ -15,10 +15,10 @@ import org.oplearn.project.entity.base.BaseEntity;
 @NoArgsConstructor
 @ToString(exclude = "password")
 public class User extends BaseEntity {
-  @Column(name = "username", nullable = false)
+  @Column(name = "username")
   private String username;
 
-  @Column(name = "password", nullable = false)
+  @Column(name = "password")
   private String password;
 
   @Column(name = "phone_number")
@@ -31,4 +31,13 @@ public class User extends BaseEntity {
   @Enumerated(EnumType.STRING)
   @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   private UserRole role;
+
+  @Column(columnDefinition = "auth_provider_enum")
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Builder.Default
+  private AuthProvider provider = AuthProvider.LOCAL;
+
+  @Column(name = "provider_id")
+  private String providerId;
 }
