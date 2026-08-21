@@ -18,5 +18,7 @@ public interface HighlightService {
 
   List<HighlightResponse> listByUserAndPoem(Long userId, Long poemId);
 
+  List<HighlightResponse> listByUserAndStoryChapter(Long userId, Long storyChapterId);
+
   PageResponse<HighlightWithPoemResponse> listByUser(Long userId, int size, int page);
 }

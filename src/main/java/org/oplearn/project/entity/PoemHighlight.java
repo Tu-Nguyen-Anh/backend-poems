@@ -18,8 +18,12 @@ public class PoemHighlight extends BaseAuditEntity {
   @Column(name = "user_id", nullable = false)
   private Long userId;
 
-  @Column(name = "poem_id", nullable = false)
+  @Column(name = "poem_id")
   private Long poemId;
+
+  /** Chương truyện được tô (khi highlight thuộc truyện thay vì bài thơ). */
+  @Column(name = "story_chapter_id")
+  private Long storyChapterId;
 
   @Column(name = "start_offset", nullable = false)
   private Integer startOffset;

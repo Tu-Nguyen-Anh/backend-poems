@@ -58,6 +58,13 @@ public class HighlightController {
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, facade.listByPoem(poemId));
   }
 
+  @GetMapping("/story-chapter/{storyChapterId}")
+  public ResponseGeneral<List<HighlightResponse>> listByStoryChapter(@PathVariable Long storyChapterId) {
+    log.info("(list) highlights for story chapter id: {}", storyChapterId);
+
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, facade.listByStoryChapter(storyChapterId));
+  }
+
   @GetMapping
   public ResponseGeneral<PageResponse<HighlightWithPoemResponse>> myHighlights(
     @RequestParam(name = PARAM_SIZE, defaultValue = SIZE_DEFAULT) int size,

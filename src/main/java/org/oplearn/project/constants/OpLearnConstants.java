@@ -72,6 +72,7 @@ public class OpLearnConstants {
       "/api/v1/auth/login",
       "/api/v1/auth/register",
       "/api/v1/auth/refresh",
+      "/api/v1/auth/logout",
       "/api/v1/auth/login/google"
     };
     public static final String[] MATCHER_ADMIN_API = {"/api/v1/admin/**"};

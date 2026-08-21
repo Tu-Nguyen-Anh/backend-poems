@@ -85,6 +85,9 @@ public class SecurityConfiguration {
     configuration.setAllowedOriginPatterns(allowedOrigins);
     configuration.addAllowedHeader(CorsConfiguration.ALL);
     configuration.addAllowedMethod(CorsConfiguration.ALL);
+    // Cho phép gửi/nhận cookie (refresh_token HttpOnly) cross-origin. Bắt buộc
+    // dùng allowedOriginPatterns (không phải "*" cứng) khi bật credentials.
+    configuration.setAllowCredentials(true);
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
     return source;

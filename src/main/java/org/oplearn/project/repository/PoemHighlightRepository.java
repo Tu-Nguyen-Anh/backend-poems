@@ -36,6 +36,17 @@ public interface PoemHighlightRepository extends JpaRepository<PoemHighlight, Lo
           """)
   List<HighlightResponse> findByUserIdAndPoemId(@Param("userId") Long userId, @Param("poemId") Long poemId);
 
+  /** Highlight của user trên 1 chương truyện (để render), sắp theo vị trí bắt đầu. */
+  @Query("""
+          SELECT new org.oplearn.project.dto.response.HighlightResponse(
+                    h.id, h.poemId, h.startOffset, h.endOffset,
+                    h.selectedText, h.note, h.createdAt)
+          FROM PoemHighlight h
+          WHERE h.userId = :userId AND h.storyChapterId = :storyChapterId AND h.isDeleted = false
+          ORDER BY h.startOffset ASC
+          """)
+  List<HighlightResponse> findByUserIdAndStoryChapterId(@Param("userId") Long userId, @Param("storyChapterId") Long storyChapterId);
+
   /** Toàn bộ highlight của user, kèm tên bài + tác giả — trang "Ghi chú của tôi". */
   @Query("""
           SELECT new org.oplearn.project.dto.response.HighlightWithPoemResponse(

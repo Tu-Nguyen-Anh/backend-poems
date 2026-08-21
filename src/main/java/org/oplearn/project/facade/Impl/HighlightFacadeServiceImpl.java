@@ -45,20 +45,25 @@ public class HighlightFacadeServiceImpl implements HighlightFacadeService {
   }
 
   public HighlightResponse create(HighlightRequest request) {
-    log.info("(facade) create highlight for poem id = {}", request.getPoemId());
     User user = currentUser();
-    Poem poem = poemService.getAvailablePoemAndThrow(request.getPoemId());
 
-    PoemHighlight highlight = PoemHighlight.builder()
+    PoemHighlight.PoemHighlightBuilder builder = PoemHighlight.builder()
       .userId(user.getId())
-      .poemId(poem.getId())
       .startOffset(request.getStartOffset())
       .endOffset(request.getEndOffset())
       .selectedText(request.getSelectedText())
-      .note(request.getNote())
-      .build();
+      .note(request.getNote());
 
-    return HighlightResponse.from(highlightService.create(highlight));
+    if (request.getStoryChapterId() != null) {
+      log.info("(facade) create highlight for story chapter id = {}", request.getStoryChapterId());
+      builder.storyChapterId(request.getStoryChapterId());
+    } else {
+      log.info("(facade) create highlight for poem id = {}", request.getPoemId());
+      Poem poem = poemService.getAvailablePoemAndThrow(request.getPoemId());
+      builder.poemId(poem.getId());
+    }
+
+    return HighlightResponse.from(highlightService.create(builder.build()));
   }
 
   public HighlightResponse updateNote(Long id, String note) {
@@ -76,6 +81,11 @@ public class HighlightFacadeServiceImpl implements HighlightFacadeService {
   public List<HighlightResponse> listByPoem(Long poemId) {
     User user = currentUser();
     return highlightService.listByUserAndPoem(user.getId(), poemId);
+  }
+
+  public List<HighlightResponse> listByStoryChapter(Long storyChapterId) {
+    User user = currentUser();
+    return highlightService.listByUserAndStoryChapter(user.getId(), storyChapterId);
   }
 
   public PageResponse<HighlightWithPoemResponse> myHighlights(int size, int page) {
