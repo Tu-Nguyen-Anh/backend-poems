@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+            http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <!-- 1. Tạo Enum Type cho Status -->
+  <changeSet id="034-create-poem-composition-status-enum" author="hazi">
+    <sql>
+      CREATE TYPE poem_composition_status_enum AS ENUM ('DRAFT', 'PRIVATE', 'PUBLISHED');
+    </sql>
+  </changeSet>
+
+  <!-- 2. Tạo Bảng poem_compositions -->
+  <changeSet id="034-create-table-poem-compositions" author="hazi">
+    <createTable tableName="poem_compositions">
+      <column name="id" type="BIGSERIAL">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+
+      <column name="user_id" type="BIGINT">
+        <constraints nullable="false"
+                     foreignKeyName="fk_poem_compositions_user_id"
+                     references="users(id)"
+                     deleteCascade="true"/>
+      </column>
+
+      <column name="title" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="content" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="pen_name" type="VARCHAR(100)"/>
+
+      <column name="genre_id" type="BIGINT">
+        <constraints foreignKeyName="fk_poem_compositions_genre_id"
+                     references="genres(id)"/>
+      </column>
+
+      <column name="status" type="poem_composition_status_enum">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="search_vec" type="tsvector"/>
+
+      <column name="is_deleted" type="BOOLEAN" defaultValueBoolean="false">
+        <constraints nullable="false"/>
+      </column>
+      <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP WITH TIME ZONE"/>
+    </createTable>
+
+    <createIndex tableName="poem_compositions" indexName="idx_poem_compositions_user_id">
+      <column name="user_id"/>
+    </createIndex>
+    <createIndex tableName="poem_compositions" indexName="idx_poem_compositions_status_created_at">
+      <column name="status"/>
+      <column name="created_at" descending="true"/>
+    </createIndex>
+  </changeSet>
+
+  <!-- 3. Trigger Full-Text Search và Trigger khi User đổi username -->
+  <changeSet id="034-poem-compositions-search-vec-trigger" author="hazi">
+    <sql splitStatements="false"><![CDATA[
+      CREATE OR REPLACE FUNCTION poem_compositions_search_vec_trg() RETURNS trigger AS $$
+      DECLARE
+      uname text;
+      BEGIN
+
+        SELECT username INTO uname FROM users WHERE id = NEW.user_id;
+
+        NEW.search_vec :=
+          setweight(to_tsvector('simple', f_unaccent(coalesce(NEW.title, ''))), 'A') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(NEW.pen_name, ''))), 'B') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(uname, ''))), 'B') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(NEW.content, ''))), 'C');
+        RETURN NEW;
+      END $$ LANGUAGE plpgsql;
+    ]]></sql>
+
+    <sql>
+      DROP TRIGGER IF EXISTS trg_poem_compositions_search_vec ON poem_compositions;
+      CREATE TRIGGER trg_poem_compositions_search_vec
+      BEFORE INSERT OR UPDATE OF title, pen_name, content, user_id ON poem_compositions
+      FOR EACH ROW EXECUTE FUNCTION poem_compositions_search_vec_trg();
+    </sql>
+
+    <sql splitStatements="false"><![CDATA[
+      CREATE OR REPLACE FUNCTION users_refresh_poem_compositions_search_vec_trg() RETURNS trigger AS $$
+      BEGIN
+        UPDATE poem_compositions
+        SET search_vec =
+          setweight(to_tsvector('simple', f_unaccent(coalesce(title, ''))), 'A') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(pen_name, ''))), 'B') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(NEW.username, ''))), 'B') ||
+          setweight(to_tsvector('simple', f_unaccent(coalesce(content, ''))), 'C')
+        WHERE user_id = NEW.id;
+
+        RETURN NEW;
+      END $$ LANGUAGE plpgsql;
+    ]]></sql>
+
+    <sql>
+      DROP TRIGGER IF EXISTS trg_users_refresh_poem_compositions_search_vec ON users;
+      CREATE TRIGGER trg_users_refresh_poem_compositions_search_vec
+      AFTER UPDATE OF username ON users
+      FOR EACH ROW
+      WHEN (OLD.username IS DISTINCT FROM NEW.username)
+      EXECUTE FUNCTION users_refresh_poem_compositions_search_vec_trg();
+    </sql>
+
+    <sql>
+      CREATE INDEX IF NOT EXISTS idx_poem_compositions_search_vec ON poem_compositions USING gin (search_vec);
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

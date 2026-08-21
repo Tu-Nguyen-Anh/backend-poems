@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+            http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <changeSet id="035-alter-comments-support-poem-compositions" author="hazi">
+    <dropNotNullConstraint tableName="comments" columnName="poem_id" columnDataType="BIGINT"/>
+
+    <addColumn tableName="comments">
+      <column name="poem_composition_id" type="BIGINT">
+        <constraints foreignKeyName="fk_comments_poem_composition"
+                     references="poem_compositions(id)"
+                     deleteCascade="true"/>
+      </column>
+    </addColumn>
+
+    <sql>
+      ALTER TABLE comments ADD CONSTRAINT chk_comment_target
+      CHECK (
+        (poem_id IS NOT NULL AND poem_composition_id IS NULL) OR
+        (poem_id IS NULL AND poem_composition_id IS NOT NULL)
+      );
+    </sql>
+
+    <sql>
+      CREATE INDEX IF NOT EXISTS idx_comments_poem_composition_id_cursor
+      ON comments (poem_composition_id, id DESC)
+      WHERE is_deleted = false;
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

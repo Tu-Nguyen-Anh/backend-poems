@@ -2,8 +2,9 @@
 <databaseChangeLog
   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+  xsi:schemaLocation="
+            http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
 
   <include file="db/changelog/001-create-table-enum.xml"/>
   <include file="db/changelog/002-create-table-users.xml"/>
@@ -38,5 +39,7 @@
   <include file="db/changelog/031-create-table-story-chapters.xml"/>
   <include file="db/changelog/032-add-story-author-id.xml"/>
   <include file="db/changelog/033-add-user-oauth-provider.xml"/>
+  <include file="db/changelog/034-create-table-poem-compositions.xml"/>
+  <include file="db/changelog/035-alter-comments-support-poem-compositions.xml"/>
 
 </databaseChangeLog>
