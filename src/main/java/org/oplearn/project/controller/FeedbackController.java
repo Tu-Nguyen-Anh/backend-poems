@@ -7,7 +7,7 @@ import org.oplearn.project.dto.request.FeedbackRequest;
 import org.oplearn.project.dto.response.FeedbackResponse;
 import org.oplearn.project.dto.response.PageResponse;
 import org.oplearn.project.dto.response.ResponseGeneral;
-import org.oplearn.project.entity.FeedbackStatus;
+import org.oplearn.project.enums.FeedbackStatus;
 import org.oplearn.project.facade.FeedbackFacadeService;
 import org.oplearn.project.service.FeedbackService;
 import org.springframework.web.bind.annotation.*;

@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.oplearn.project.dto.response.FeedbackResponse;
 import org.oplearn.project.dto.response.PageResponse;
 import org.oplearn.project.entity.Feedback;
-import org.oplearn.project.entity.FeedbackStatus;
+import org.oplearn.project.enums.FeedbackStatus;
 import org.oplearn.project.exception.FeedbackNotFoundException;
 import org.oplearn.project.repository.FeedbackRepository;
 import org.oplearn.project.service.FeedbackService;

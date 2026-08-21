@@ -16,6 +16,7 @@ public class CommentResponse {
   private Long id;
   private String content;
   private Long poemId;
+  private Long poemCompositionId;
   private Long userId;
   private String username;
   private Instant createdAt;
@@ -25,6 +26,7 @@ public class CommentResponse {
       comment.getId(),
       comment.getContent().strip(),
       comment.getPoemId(),
+      comment.getPoemCompositionId(),
       comment.getUserId(),
       username,
       comment.getCreatedAt()

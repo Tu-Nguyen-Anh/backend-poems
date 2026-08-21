@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.oplearn.project.entity.base.BaseAuditEntity;
+import org.oplearn.project.enums.FeedbackStatus;
 
 @Entity
 @Table(name = "feedbacks")

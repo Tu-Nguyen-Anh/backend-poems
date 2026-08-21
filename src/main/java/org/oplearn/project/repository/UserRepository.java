@@ -1,6 +1,6 @@
 package org.oplearn.project.repository;
 
-import org.oplearn.project.entity.AuthProvider;
+import org.oplearn.project.enums.AuthProvider;
 import org.oplearn.project.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

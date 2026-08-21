@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.oplearn.project.entity.UserRole;
+import org.oplearn.project.enums.UserRole;
 
 @AllArgsConstructor
 @NoArgsConstructor

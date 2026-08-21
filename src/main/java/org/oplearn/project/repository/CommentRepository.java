@@ -27,11 +27,14 @@ public interface CommentRepository extends JpaRepository<Comment , Long> {
 
   long countByUserIdAndIsDeletedFalse(Long userId);
 
+  long countByPoemCompositionIdAndIsDeletedFalse(Long poemCompositionId);
+
   @Query("""
           SELECT new org.oplearn.project.dto.response.CommentResponse(
                     c.id,
                     c.content,
                     c.poemId,
+                    c.poemCompositionId,
                     c.userId,
                     u.username,
                     c.createdAt
@@ -48,6 +51,7 @@ public interface CommentRepository extends JpaRepository<Comment , Long> {
               c.id,
               c.content,
               c.poemId,
+              c.poemCompositionId,
               c.userId,
               u.username,
               c.createdAt
@@ -66,10 +70,34 @@ public interface CommentRepository extends JpaRepository<Comment , Long> {
   );
 
   @Query("""
+    SELECT new org.oplearn.project.dto.response.CommentResponse(
+              c.id,
+              c.content,
+              c.poemId,
+              c.poemCompositionId,
+              c.userId,
+              u.username,
+              c.createdAt
+              )
+    FROM Comment c
+    LEFT JOIN User u ON c.userId = u.id
+    WHERE c.poemCompositionId = :poemCompositionId
+    AND c.isDeleted = false
+    AND (:cursor IS NULL OR c.id < :cursor)
+    ORDER BY c.id DESC
+    """)
+  List<CommentResponse> findByPoemCompositionIdCursor(
+    @Param("poemCompositionId") Long poemCompositionId,
+    @Param("cursor") Long cursor,
+    Pageable pageable
+  );
+
+  @Query("""
             SELECT new org.oplearn.project.dto.response.CommentResponse(
                       c.id,
                       c.content,
                       c.poemId,
+                      c.poemCompositionId,
                       c.userId,
                       u.username,
                       c.createdAt

@@ -8,10 +8,14 @@ import org.oplearn.project.dto.response.CursorPageResponse;
 import org.oplearn.project.dto.response.PageResponse;
 import org.oplearn.project.entity.Comment;
 import org.oplearn.project.entity.Poem;
+import org.oplearn.project.entity.PoemComposition;
 import org.oplearn.project.entity.User;
+import org.oplearn.project.enums.PoemCompositionStatus;
 import org.oplearn.project.exception.UserUnauthorizedException;
+import org.oplearn.project.exception.base.BadRequestException;
 import org.oplearn.project.facade.CommentFacadeService;
 import org.oplearn.project.service.CommentService;
+import org.oplearn.project.service.CompositionService;
 import org.oplearn.project.service.PoemService;
 import org.oplearn.project.service.UserService;
 import org.springframework.security.core.Authentication;
@@ -25,6 +29,7 @@ public class CommentFacadeServiceImpl implements CommentFacadeService {
   private final CommentService commentService;
   private final UserService userService;
   private final PoemService poemService;
+  private final CompositionService compositionService;
 
   public CommentResponse create(CommentRequest request) {
     log.info("(facade) create comment");
@@ -35,12 +40,34 @@ public class CommentFacadeServiceImpl implements CommentFacadeService {
 
     User currentUser = userService.getUsernameOrThrow(currentUsername);
 
-    Poem poem = poemService.getAvailablePoemAndThrow(request.getPoemId());
+    boolean hasPoem = request.getPoemId() != null;
+    boolean hasComposition = request.getPoemCompositionId() != null;
+
+    if ((hasPoem && hasComposition) || (!hasPoem && !hasComposition)) {
+      log.warn("(create) comment must target either poem or composition");
+      throw new BadRequestException();
+    }
+
+    Long poemId = null;
+    Long poemCompositionId = null;
+
+    if (hasPoem) {
+      Poem poem = poemService.getAvailablePoemAndThrow(request.getPoemId());
+      poemId = poem.getId();
+    } else {
+      PoemComposition composition = compositionService.getAvailableCompositionAndThrow(request.getPoemCompositionId());
+      if(composition.getStatus() != PoemCompositionStatus.PUBLISHED) {
+        log.warn("(create) composition must be published");
+        throw new BadRequestException();
+      }
+      poemCompositionId = composition.getId();
+    }
 
     Comment comment = Comment.builder()
       .content(request.getContent())
       .userId(currentUser.getId())
-      .poemId(poem.getId())
+      .poemId(poemId)
+      .poemCompositionId(poemCompositionId)
       .build();
 
     Comment savedComment = commentService.create(comment);
