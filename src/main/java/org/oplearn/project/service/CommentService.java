@@ -16,6 +16,8 @@ public interface CommentService {
 
   CursorPageResponse<CommentResponse> getCommentsByPoemId(Long poemId, Long cursor, int size);
 
+  CursorPageResponse<CommentResponse> getCommentsByPoemCompositionId(Long poemCompositionId, Long cursor, int size);
+
   CursorPageResponse<CommentResponse> getCommentsByUserId(Long userId, Long cursor, int size);
 
   Comment getAvailableCommentAndThrow(Long id);

@@ -77,4 +77,17 @@ public class CommentController {
 
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.getCommentsByPoemId(poemId, cursor, size));
   }
+
+  @GetMapping("/composition/{compositionId}")
+  public ResponseGeneral<CursorPageResponse<CommentResponse>> listByComposition(
+    @PathVariable Long compositionId,
+    @RequestParam(name = PARAM_CURSOR, required = false) Long cursor,
+    @RequestParam(name = PARAM_SIZE, defaultValue = SIZE_DEFAULT) int size
+  ) {
+    log.info("(list by composition) comment composition id: {}, cursor: {}, size: {}", compositionId, cursor, size);
+
+    size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
+
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.getCommentsByPoemCompositionId(compositionId, cursor, size));
+  }
 }

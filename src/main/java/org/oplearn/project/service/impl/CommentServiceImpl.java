@@ -72,6 +72,24 @@ public class CommentServiceImpl implements CommentService {
     return CursorPageResponse.of(comments, nextCursor, hasNext, totalElements);
   }
 
+   public CursorPageResponse<CommentResponse> getCommentsByPoemCompositionId(Long poemCompositionId, Long cursor, int size) {
+    Pageable pageable = PageRequest.of(0, size + 1);
+
+    List<CommentResponse> comments = repository.findByPoemCompositionIdCursor(poemCompositionId, cursor, pageable);
+
+     boolean hasNext = comments.size() > size;
+     Long nextCursor = null;
+
+     if (hasNext) {
+       comments = comments.subList(0, size);
+       nextCursor = comments.get(comments.size() - 1).getId();
+     }
+
+     Long totalElements = (cursor == null) ? repository.countByPoemCompositionIdAndIsDeletedFalse(poemCompositionId) : null;
+
+     return CursorPageResponse.of(comments, nextCursor, hasNext, totalElements);
+   }
+
   public CursorPageResponse<CommentResponse> getCommentsByUserId(Long userId, Long cursor, int size) {
 
     Pageable pageable = PageRequest.of(0, size + 1);
