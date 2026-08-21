@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.oplearn.project.entity.User;
-import org.oplearn.project.entity.UserRole;
+import org.oplearn.project.enums.UserRole;
 
 import java.time.Instant;
 

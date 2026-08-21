@@ -1,4 +1,4 @@
-package org.oplearn.project.entity;
+package org.oplearn.project.enums;
 
 public enum AuthProvider {
   LOCAL,

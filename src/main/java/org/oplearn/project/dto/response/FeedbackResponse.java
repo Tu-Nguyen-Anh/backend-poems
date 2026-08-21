@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.oplearn.project.entity.Feedback;
-import org.oplearn.project.entity.FeedbackStatus;
+import org.oplearn.project.enums.FeedbackStatus;
 
 import java.time.Instant;
 

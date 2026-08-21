@@ -2,7 +2,7 @@ package org.oplearn.project.repository;
 
 import org.oplearn.project.dto.response.FeedbackResponse;
 import org.oplearn.project.entity.Feedback;
-import org.oplearn.project.entity.FeedbackStatus;
+import org.oplearn.project.enums.FeedbackStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

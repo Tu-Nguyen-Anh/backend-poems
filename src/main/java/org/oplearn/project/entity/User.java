@@ -5,6 +5,8 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.oplearn.project.entity.base.BaseEntity;
+import org.oplearn.project.enums.AuthProvider;
+import org.oplearn.project.enums.UserRole;
 
 @Entity
 @Table(name = "users")

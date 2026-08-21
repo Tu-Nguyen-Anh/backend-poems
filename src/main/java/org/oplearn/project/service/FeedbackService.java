@@ -3,7 +3,7 @@ package org.oplearn.project.service;
 import org.oplearn.project.dto.response.FeedbackResponse;
 import org.oplearn.project.dto.response.PageResponse;
 import org.oplearn.project.entity.Feedback;
-import org.oplearn.project.entity.FeedbackStatus;
+import org.oplearn.project.enums.FeedbackStatus;
 
 public interface FeedbackService {
   Feedback create(Feedback feedback);
