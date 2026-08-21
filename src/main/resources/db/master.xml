@@ -41,5 +41,6 @@
   <include file="db/changelog/033-add-user-oauth-provider.xml"/>
   <include file="db/changelog/034-create-table-poem-compositions.xml"/>
   <include file="db/changelog/035-alter-comments-support-poem-compositions.xml"/>
+  <include file="db/changelog/036-highlights-support-story-chapters.xml"/>
 
 </databaseChangeLog>

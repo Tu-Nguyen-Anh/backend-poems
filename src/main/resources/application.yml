@@ -26,6 +26,12 @@ server:
 app:
   seo:
     base-url: ${PUBLIC_BASE_URL:https://daithihao.tuvidausotoanthu.vn}
+  auth:
+    # Cookie chứa refresh token (HttpOnly). PROD BẮT BUỘC secure=true (HTTPS).
+    # FE + API cùng registrable domain (tuvidausotoanthu.vn) → SameSite=Lax đủ.
+    cookie:
+      secure: ${AUTH_COOKIE_SECURE:false}
+      same-site: ${AUTH_COOKIE_SAME_SITE:Lax}
 
 management:
   endpoints:

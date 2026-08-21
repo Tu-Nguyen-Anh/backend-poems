@@ -16,6 +16,9 @@ import lombok.*;
 public class HighlightRequest {
   private Long poemId;
 
+  /** Nếu set → highlight thuộc chương truyện (thay vì bài thơ). */
+  private Long storyChapterId;
+
   @NotNull(message = "highlight.start_offset.not_null")
   private Integer startOffset;
 

@@ -45,6 +45,10 @@ public class HighlightServiceImpl implements HighlightService {
     return repository.findByUserIdAndPoemId(userId, poemId);
   }
 
+  public List<HighlightResponse> listByUserAndStoryChapter(Long userId, Long storyChapterId) {
+    return repository.findByUserIdAndStoryChapterId(userId, storyChapterId);
+  }
+
   public PageResponse<HighlightWithPoemResponse> listByUser(Long userId, int size, int page) {
     Pageable pageable = PageRequest.of(page, size);
     Page<HighlightWithPoemResponse> highlights = repository.findByUserId(userId, pageable);

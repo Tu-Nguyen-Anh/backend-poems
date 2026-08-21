@@ -10,6 +10,7 @@ import org.oplearn.project.entity.StoryChapter;
 @Setter
 @NoArgsConstructor
 public class StoryChapterResponse {
+  private Long id;
   private Long storyId;
   private Integer seq;
   private String title;
@@ -19,6 +20,7 @@ public class StoryChapterResponse {
 
   public static StoryChapterResponse from(StoryChapter c) {
     StoryChapterResponse r = new StoryChapterResponse();
+    r.id = c.getId();
     r.storyId = c.getStoryId();
     r.seq = c.getSeq();
     r.title = c.getTitle();

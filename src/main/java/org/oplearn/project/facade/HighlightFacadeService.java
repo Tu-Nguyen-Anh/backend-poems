@@ -16,5 +16,7 @@ public interface HighlightFacadeService {
 
   List<HighlightResponse> listByPoem(Long poemId);
 
+  List<HighlightResponse> listByStoryChapter(Long storyChapterId);
+
   PageResponse<HighlightWithPoemResponse> myHighlights(int size, int page);
 }
