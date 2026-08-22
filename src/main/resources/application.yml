@@ -77,3 +77,12 @@ aws:
 
 google:
   client-id: ${GOOGLE_CLIENT_ID:772102149835-vgiaigbr51untf545i1n8a4rsmv7r0tb.apps.googleusercontent.com}
+
+# Bot Zalo — thao tác /tho, /tacgia <tên> để nhận thơ ngẫu nhiên. Long-polling
+# (không cần URL public). Token đặt mặc định cho tiện; đổi khi cần qua ENV ZALO_BOT_TOKEN.
+zalo:
+  bot:
+    enabled: ${ZALO_BOT_ENABLED:true}
+    token: "${ZALO_BOT_TOKEN:1610408961969020454:xUBMFTGRixkOyHhExGaEexinKtQFPwPdbzOZIPYDNsVJMZYVoCmfLiGWYjGhykAU}"
+    api-base: ${ZALO_BOT_API_BASE:https://bot-api.zaloplatforms.com}
+    poll-timeout-seconds: ${ZALO_BOT_POLL_TIMEOUT:30}
