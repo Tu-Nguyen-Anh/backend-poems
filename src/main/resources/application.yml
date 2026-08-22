@@ -12,6 +12,16 @@ spring:
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      # Khai báo pool tường minh (trước đây để mặc định). Chỉnh qua ENV nếu cần.
+      maximum-pool-size: ${DB_POOL_MAX:15}
+      minimum-idle: ${DB_POOL_MIN:5}
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+  jpa:
+    # Tắt anti-pattern giữ connection suốt lúc render view (trả connection về pool sớm).
+    open-in-view: false
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -22,6 +32,11 @@ spring:
 
 server:
   port: ${PORT:8090}
+  compression:
+    # Nén JSON trả về (trước đây tắt) — giảm băng thông + TTFB cho list/search.
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain,text/css,application/javascript,image/svg+xml
+    min-response-size: 1024
 
 app:
   seo:
