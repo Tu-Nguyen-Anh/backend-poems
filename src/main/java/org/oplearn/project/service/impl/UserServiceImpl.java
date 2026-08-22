@@ -3,10 +3,12 @@ package org.oplearn.project.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oplearn.project.dto.request.UserRequest;
+import org.oplearn.project.dto.request.UserUpdateRequest;
 import org.oplearn.project.dto.response.PageResponse;
 import org.oplearn.project.dto.response.UserResponse;
 import org.oplearn.project.entity.User;
 import org.oplearn.project.exception.EmailAlreadyExistedException;
+import org.oplearn.project.exception.ProtectedAccountException;
 import org.oplearn.project.exception.UserNotFoundException;
 import org.oplearn.project.exception.UserUnauthorizedException;
 import org.oplearn.project.exception.UsernameAlreadyExistedException;
@@ -56,7 +58,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
-  public UserResponse update(UserRequest request, Long id) {
+  public UserResponse update(UserUpdateRequest request, Long id) {
     log.info("(update) id: {}", id);
 
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -68,13 +70,22 @@ public class UserServiceImpl implements UserService {
     boolean isAdmin = authentication.getAuthorities().stream()
       .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-    if (!isAdmin && !currentUser.getId().equals(id)) {
+    boolean isSelf = currentUser.getId().equals(id);
+
+    if (!isAdmin && !isSelf) {
       log.warn("(update) user not authorized");
       throw new UserUnauthorizedException();
     }
 
     User user = repository.findByIdAndIsDeletedFalse(id)
       .orElseThrow(UserNotFoundException::new);
+
+    // Tài khoản hệ thống (admin/superadmin) chỉ chính chủ mới được sửa,
+    // admin khác không được đụng tới.
+    if (isProtectedAccount(user.getUsername()) && !isSelf) {
+      log.warn("(update) protected account {} chỉ chính chủ được sửa", user.getUsername());
+      throw new ProtectedAccountException();
+    }
 
     if (!Objects.equals(user.getUsername(), request.getUsername())
       && repository.existsByUsernameAndIsDeletedFalse(request.getUsername())) {
@@ -87,11 +98,25 @@ public class UserServiceImpl implements UserService {
     }
 
     user.setUsername(request.getUsername());
-    user.setPassword(passwordEncoder.encode(request.getPassword()));
     user.setPhoneNumber(request.getPhoneNumber());
     user.setEmail(request.getEmail());
+    // Chỉ đổi mật khẩu khi có nhập (sửa thông tin không reset mật khẩu).
+    if (StringUtils.hasText(request.getPassword())) {
+      user.setPassword(passwordEncoder.encode(request.getPassword()));
+    }
+    // Nâng/hạ vai trò: chỉ admin mới được đổi role.
+    if (request.getRole() != null && isAdmin) {
+      user.setRole(request.getRole());
+    }
 
     return UserResponse.from(repository.save(user));
+  }
+
+  /** Username các tài khoản hệ thống được bảo vệ (hardcode). */
+  private static final java.util.Set<String> PROTECTED_USERNAMES = java.util.Set.of("admin", "superadmin");
+
+  private boolean isProtectedAccount(String username) {
+    return username != null && PROTECTED_USERNAMES.contains(username.toLowerCase());
   }
 
   @Override
@@ -131,8 +156,12 @@ public class UserServiceImpl implements UserService {
   @Override
   @Transactional
   public void delete(Long id) {
-    if (repository.findByIdAndIsDeletedFalse(id).isEmpty()) {
-      throw new UserNotFoundException();
+    User user = repository.findByIdAndIsDeletedFalse(id)
+      .orElseThrow(UserNotFoundException::new);
+    // Không cho xoá tài khoản hệ thống (admin/superadmin).
+    if (isProtectedAccount(user.getUsername())) {
+      log.warn("(delete) từ chối xoá tài khoản bảo vệ {}", user.getUsername());
+      throw new ProtectedAccountException();
     }
     repository.softDeleteById(id);
   }

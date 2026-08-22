@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oplearn.project.dto.request.UserRequest;
+import org.oplearn.project.dto.request.UserUpdateRequest;
 import org.oplearn.project.dto.response.PageResponse;
 import org.oplearn.project.dto.response.ResponseGeneral;
 import org.oplearn.project.dto.response.UserResponse;
@@ -46,7 +47,7 @@ public class UserController {
 
   @PutMapping("/{id}")
   public ResponseGeneral<UserResponse> update(
-        @Valid @RequestBody UserRequest request,
+        @Valid @RequestBody UserUpdateRequest request,
         @PathVariable Long id
   ) {
     log.info("(update) id: {}, request: {}", id, request);
