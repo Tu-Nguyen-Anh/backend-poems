@@ -81,10 +81,18 @@ public class ZaloBotPoller implements ApplicationRunner {
     String text = msg.path("text").asText(null);
     String chatId = msg.path("chat").path("id").asText(null);
     String id = msg.path("message_id").asText(null);
-    if (chatId == null || text == null) return;
+    if (chatId == null || text == null) {
+      log.info("(zalo-bot) bỏ qua update không có text/chat");
+      return;
+    }
     if (id != null && !seen.add(id)) return; // đã trả lời rồi
+    log.info("(zalo-bot) nhận từ {}: {}", chatId, text);
     try {
-      client.sendMessage(chatId, service.reply(text));
+      java.util.List<String> replies = service.reply(chatId, text);
+      for (String r : replies) {
+        client.sendMessage(chatId, r);
+      }
+      log.info("(zalo-bot) đã trả lời {} ({} tin)", chatId, replies.size());
     } catch (Exception e) {
       log.warn("(zalo-bot) send fail: {}", e.getMessage());
     }
