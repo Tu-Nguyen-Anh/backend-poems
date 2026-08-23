@@ -29,6 +29,7 @@ public class PoemResponse {
   // Bổ sung ở trang chi tiết (không nằm trong projection JPQL 11 tham số)
   private String meaning;
   private List<PoemTranslationResponse> translations;
+  private PoemStatisticsResponse statistics;
 
   /** Constructor dùng cho projection JPQL — GIỮ đúng 11 tham số, thứ tự cố định. */
   public PoemResponse(
