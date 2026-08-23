@@ -14,6 +14,7 @@ import org.oplearn.project.exception.UserUnauthorizedException;
 import org.oplearn.project.facade.ReplyFacadeService;
 import org.oplearn.project.service.CommentService;
 import org.oplearn.project.service.ReplyService;
+import org.oplearn.project.service.StatisticService;
 import org.oplearn.project.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,6 +27,7 @@ public class ReplyFacadeServiceImpl implements ReplyFacadeService {
   private final ReplyService replyService;
   private final UserService userService;
   private final CommentService commentService;
+  private final StatisticService statisticService;
 
   public ReplyResponse create(ReplyRequest request) {
     log.info("(facade) create reply)");
@@ -45,6 +47,10 @@ public class ReplyFacadeServiceImpl implements ReplyFacadeService {
       .build();
 
     Reply savedReply = replyService.create(reply);
+
+    if (comment.getPoemId() != null) {
+      statisticService.increaseComment(comment.getPoemId());
+    }
 
     return ReplyResponse.from(
       savedReply,
@@ -100,6 +106,17 @@ public class ReplyFacadeServiceImpl implements ReplyFacadeService {
     }
 
     replyService.delete(id);
+
+    if (existingReply.getCommentId() != null) {
+      try {
+        Comment comment = commentService.getAvailableCommentAndThrow(existingReply.getCommentId());
+        if (comment.getPoemId() != null) {
+          statisticService.decreaseComment(comment.getPoemId());
+        }
+      } catch (Exception ex) {
+        log.warn("(delete reply) skip decrement comment count: {}", ex.getMessage());
+      }
+    }
   }
 
   public CommentWithRepliesResponse getReplyByCommentId(Long commentId, Long cursor, int size) {

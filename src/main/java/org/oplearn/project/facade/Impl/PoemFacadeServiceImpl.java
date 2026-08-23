@@ -7,10 +7,13 @@ import org.oplearn.project.dto.response.PoemResponse;
 import org.oplearn.project.entity.Author;
 import org.oplearn.project.entity.Genre;
 import org.oplearn.project.entity.Poem;
+import jakarta.servlet.http.HttpServletRequest;
 import org.oplearn.project.facade.PoemFacadeService;
 import org.oplearn.project.service.AuthorService;
 import org.oplearn.project.service.GenreService;
 import org.oplearn.project.service.PoemService;
+import org.oplearn.project.service.StatisticService;
+import org.oplearn.project.utils.ClientIpUtils;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -20,6 +23,7 @@ public class PoemFacadeServiceImpl implements PoemFacadeService {
   private final PoemService poemService;
   private final AuthorService authorService;
   private final GenreService genreService;
+  private final StatisticService statisticService;
 
   public PoemResponse create(PoemRequest request) {
     log.info("(facade) create poem");
@@ -84,5 +88,20 @@ public class PoemFacadeServiceImpl implements PoemFacadeService {
       genre != null ? genre.getName() : null,
       author != null ? author.getName() : null
     );
+  }
+
+  @Override
+  public PoemResponse detail(Long id, HttpServletRequest request) {
+    log.info("(facade) detail poem id = {}", id);
+    Poem poem = poemService.getAvailablePoemAndThrow(id);
+    statisticService.increaseView(poem.getId(), ClientIpUtils.getUserIdentifier(request));
+    return poemService.detail(id);
+  }
+
+  @Override
+  public void share(Long id) {
+    log.info("(facade) share poem id = {}", id);
+    Poem poem = poemService.getAvailablePoemAndThrow(id);
+    statisticService.increaseShare(poem.getId());
   }
 }

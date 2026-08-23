@@ -1,5 +1,6 @@
 package org.oplearn.project.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -83,9 +84,16 @@ public class PoemController {
   }
 
   @GetMapping("/{id}")
-  public ResponseGeneral<PoemResponse> detail(@PathVariable Long id) {
+  public ResponseGeneral<PoemResponse> detail(@PathVariable Long id, HttpServletRequest request) {
     log.info("(detail) id: {}", id);
-    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.detail(id));
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, facade.detail(id, request));
+  }
+
+  @PostMapping("/{id}/share")
+  public ResponseGeneral<Void> share(@PathVariable Long id) {
+    log.info("(share) poem id: {}", id);
+    facade.share(id);
+    return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE);
   }
 
   @PostMapping
