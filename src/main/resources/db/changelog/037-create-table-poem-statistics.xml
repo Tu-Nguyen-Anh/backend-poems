@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+
+  <changeSet id="037-create-poem-statistics" author="hazi">
+    <createTable tableName="poem_statistics">
+      <column name="id" type="BIGSERIAL">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+
+      <column name="poem_id" type="BIGINT">
+        <constraints nullable="false"
+                     unique="true"
+                     uniqueConstraintName="uq_poem_statistics_poem_id"
+                     foreignKeyName="fk_poem_statistics_poem"
+                     references="poems(id)"/>
+      </column>
+
+      <column name="view_count" type="BIGINT" defaultValueNumeric="0">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="favorite_count" type="BIGINT" defaultValueNumeric="0">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="share_count" type="BIGINT" defaultValueNumeric="0">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="comment_count" type="BIGINT" defaultValueNumeric="0">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="is_deleted" type="BOOLEAN" defaultValueBoolean="false"/>
+      <column name="created_at"
+              type="TIMESTAMP WITH TIME ZONE"
+              defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="updated_at"
+              type="TIMESTAMP WITH TIME ZONE"/>
+    </createTable>
+
+    <createIndex tableName="poem_statistics" indexName="idx_poem_statistics_view_count">
+      <column name="view_count"/>
+    </createIndex>
+
+    <createIndex tableName="poem_statistics" indexName="idx_poem_statistics_favorite_count">
+      <column name="favorite_count"/>
+    </createIndex>
+  </changeSet>
+
+  <changeSet id="037-backfill-poem-statistics" author="hazi">
+    <sql>
+      INSERT INTO poem_statistics (poem_id, view_count, favorite_count, share_count, comment_count, is_deleted, created_at, updated_at)
+      SELECT
+          p.id AS poem_id,
+          0 AS view_count,
+          (SELECT COUNT(*) FROM favorites f WHERE f.poem_id = p.id AND f.is_deleted = false) AS favorite_count,
+          0 AS share_count,
+          (
+            (SELECT COUNT(*) FROM comments c WHERE c.poem_id = p.id AND c.is_deleted = false)
+            +
+            (SELECT COUNT(*) FROM replies r
+             JOIN comments c ON r.comment_id = c.id
+             WHERE c.poem_id = p.id AND r.is_deleted = false AND c.is_deleted = false)
+          ) AS comment_count,
+          false AS is_deleted,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+      FROM poems p
+      WHERE p.is_deleted = false
+      ON CONFLICT (poem_id) DO NOTHING;
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

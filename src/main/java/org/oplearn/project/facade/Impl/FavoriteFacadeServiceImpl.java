@@ -9,6 +9,7 @@ import org.oplearn.project.entity.User;
 import org.oplearn.project.facade.FavoriteFacadeService;
 import org.oplearn.project.service.FavoriteService;
 import org.oplearn.project.service.PoemService;
+import org.oplearn.project.service.StatisticService;
 import org.oplearn.project.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +22,7 @@ public class FavoriteFacadeServiceImpl implements FavoriteFacadeService {
   private final FavoriteService favoriteService;
   private final UserService userService;
   private final PoemService poemService;
+  private final StatisticService statisticService;
 
   private User currentUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -31,14 +33,22 @@ public class FavoriteFacadeServiceImpl implements FavoriteFacadeService {
     log.info("(facade) add favorite poem id = {}", poemId);
     User user = currentUser();
     Poem poem = poemService.getAvailablePoemAndThrow(poemId);
-    favoriteService.add(user.getId(), poem.getId());
+
+    if (!favoriteService.isFavorited(user.getId(), poem.getId())) {
+      favoriteService.add(user.getId(), poem.getId());
+      statisticService.increaseFavorite(poem.getId());
+    }
     return true;
   }
 
   public boolean remove(Long poemId) {
     log.info("(facade) remove favorite poem id = {}", poemId);
     User user = currentUser();
-    favoriteService.remove(user.getId(), poemId);
+
+    if (favoriteService.isFavorited(user.getId(), poemId)) {
+      favoriteService.remove(user.getId(), poemId);
+      statisticService.decreaseFavorite(poemId);
+    }
     return false;
   }
 

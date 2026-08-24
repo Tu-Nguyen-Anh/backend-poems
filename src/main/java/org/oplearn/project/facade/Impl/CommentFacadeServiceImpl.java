@@ -17,6 +17,7 @@ import org.oplearn.project.facade.CommentFacadeService;
 import org.oplearn.project.service.CommentService;
 import org.oplearn.project.service.CompositionService;
 import org.oplearn.project.service.PoemService;
+import org.oplearn.project.service.StatisticService;
 import org.oplearn.project.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,6 +31,7 @@ public class CommentFacadeServiceImpl implements CommentFacadeService {
   private final UserService userService;
   private final PoemService poemService;
   private final CompositionService compositionService;
+  private final StatisticService statisticService;
 
   public CommentResponse create(CommentRequest request) {
     log.info("(facade) create comment");
@@ -71,6 +73,10 @@ public class CommentFacadeServiceImpl implements CommentFacadeService {
       .build();
 
     Comment savedComment = commentService.create(comment);
+
+    if (savedComment.getPoemId() != null) {
+      statisticService.increaseComment(savedComment.getPoemId());
+    }
 
     return CommentResponse.from(savedComment, currentUser.getUsername());
   }
@@ -133,5 +139,9 @@ public class CommentFacadeServiceImpl implements CommentFacadeService {
     }
 
     commentService.delete(id);
+
+    if (comment.getPoemId() != null) {
+      statisticService.decreaseComment(comment.getPoemId());
+    }
   }
 }
