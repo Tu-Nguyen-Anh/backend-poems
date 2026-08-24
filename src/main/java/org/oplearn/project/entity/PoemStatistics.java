@@ -8,12 +8,10 @@ import org.oplearn.project.entity.base.BaseAuditEntity;
 
 @Entity
 @Table(name = "poem_statistics")
-@Getter
-@Setter
+@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
 public class PoemStatistics extends BaseAuditEntity {
 
   @Column(name = "poem_id", nullable = false, unique = true)
