@@ -8,21 +8,30 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.oplearn.project.dto.request.ForgotPasswordRequest;
 import org.oplearn.project.dto.request.GoogleLoginRequest;
 import org.oplearn.project.dto.request.LoginRequest;
+import org.oplearn.project.dto.request.PendingRegisterData;
 import org.oplearn.project.dto.request.RegisterRequest;
+import org.oplearn.project.dto.request.ResetPasswordRequest;
+import org.oplearn.project.dto.request.VerifyOtpRequest;
 import org.oplearn.project.dto.response.TokenResponse;
 import org.oplearn.project.enums.AuthProvider;
 import org.oplearn.project.entity.User;
 import org.oplearn.project.enums.UserRole;
 import org.oplearn.project.exception.EmailAlreadyExistedException;
 import org.oplearn.project.exception.InvalidCredentialException;
+import org.oplearn.project.exception.InvalidOtpException;
 import org.oplearn.project.exception.InvalidRefreshTokenException;
+import org.oplearn.project.exception.OtpExpiredException;
+import org.oplearn.project.exception.UserNotFoundException;
 import org.oplearn.project.exception.UsernameAlreadyExistedException;
 import org.oplearn.project.repository.UserRepository;
+import org.oplearn.project.repository.redis.OtpRedisRepository;
 import org.oplearn.project.repository.redis.TokenRedisRepository;
 import org.oplearn.project.security.jwt.JwtTokenProvider;
 import org.oplearn.project.service.AuthService;
+import org.oplearn.project.service.EmailService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,6 +40,7 @@ import org.springframework.util.StringUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import static org.oplearn.project.constants.OpLearnConstants.AuthConstant.TYPE_TOKEN;
 
@@ -43,6 +53,8 @@ public class AuthServiceImpl implements AuthService {
 
   private final UserRepository userRepository;
   private final TokenRedisRepository tokenRedisRepository;
+  private final OtpRedisRepository otpRedisRepository;
+  private final EmailService emailService;
   private final JwtTokenProvider jwtTokenProvider;
   private final PasswordEncoder passwordEncoder;
 
@@ -57,7 +69,8 @@ public class AuthServiceImpl implements AuthService {
     return issueTokens(user);
   }
 
-  public TokenResponse register(RegisterRequest request) {
+  @Override
+  public void register(RegisterRequest request) {
     if (userRepository.existsByUsernameAndIsDeletedFalse(request.getUsername())) {
       throw new UsernameAlreadyExistedException();
     }
@@ -66,17 +79,91 @@ public class AuthServiceImpl implements AuthService {
       throw new EmailAlreadyExistedException();
     }
 
-    User user = User.builder()
+    String otpCode = String.valueOf((int) ((Math.random() * 900000) + 100000));
+
+    PendingRegisterData pendingData = PendingRegisterData.builder()
       .username(request.getUsername())
       .email(request.getEmail())
       .phoneNumber(request.getPhoneNumber())
-      .password(passwordEncoder.encode(request.getPassword()))
+      .encodedPassword(passwordEncoder.encode(request.getPassword()))
+      .otpCode(otpCode)
+      .build();
+
+    otpRedisRepository.savePendingRegistration(request.getEmail(), pendingData, Duration.ofMinutes(5));
+
+    emailService.sendHtmlEmail(
+      request.getEmail(),
+      "Xác thực tài khoản - Backend Poems",
+      "mail/welcome-email",
+      Map.of("recipientName", request.getUsername(), "otpCode", otpCode)
+    );
+  }
+
+  @Override
+  public TokenResponse verifyOtp(VerifyOtpRequest request) {
+    PendingRegisterData pendingData = otpRedisRepository.getPendingRegistration(request.getEmail())
+          .orElseThrow(OtpExpiredException::new);
+
+    if (!pendingData.getOtpCode().equals(request.getOtp())) {
+      throw new InvalidOtpException();
+    }
+
+    if (userRepository.existsByUsernameAndIsDeletedFalse(pendingData.getUsername())) {
+      throw new UsernameAlreadyExistedException();
+    }
+    if (StringUtils.hasText(pendingData.getEmail())
+      && userRepository.existsByEmailAndIsDeletedFalse(pendingData.getEmail())) {
+      throw new EmailAlreadyExistedException();
+    }
+
+    // Chính thức lưu User vào Database
+    User user = User.builder()
+      .username(pendingData.getUsername())
+      .email(pendingData.getEmail())
+      .phoneNumber(pendingData.getPhoneNumber())
+      .password(pendingData.getEncodedPassword())
       .role(UserRole.USER)
       .build();
 
     userRepository.save(user);
 
+    otpRedisRepository.deletePendingRegistration(request.getEmail());
+
     return issueTokens(user);
+  }
+
+  @Override
+  public void forgotPassword(ForgotPasswordRequest request) {
+    User user = userRepository.findByEmailAndIsDeletedFalse(request.getEmail())
+          .orElseThrow(UserNotFoundException::new);
+
+    String otpCode = String.valueOf((int) ((Math.random() * 900000) + 100000));
+    otpRedisRepository.saveForgotPasswordOtp(request.getEmail(), otpCode, Duration.ofMinutes(5));
+
+    emailService.sendHtmlEmail(
+          request.getEmail(),
+          "Yêu cầu đặt lại mật khẩu - Backend Poems 📜",
+          "mail/forgot-password-email",
+          Map.of("recipientName", user.getUsername(), "otpCode", otpCode)
+    );
+  }
+
+  @Override
+  public void resetPassword(ResetPasswordRequest request) {
+    String savedOtp = otpRedisRepository.getForgotPasswordOtp(request.getEmail())
+          .orElseThrow(OtpExpiredException::new);
+
+    if (!savedOtp.equals(request.getOtp())) {
+      throw new InvalidOtpException();
+    }
+
+    User user = userRepository.findByEmailAndIsDeletedFalse(request.getEmail())
+          .orElseThrow(UserNotFoundException::new);
+
+    user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+    userRepository.save(user);
+
+    otpRedisRepository.deleteForgotPasswordOtp(request.getEmail());
   }
 
   @Override
