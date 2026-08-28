@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mã xác thực tài khoản</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 580px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .header { background: linear-gradient(135deg, #3b82f6, #1d4ed8); padding: 30px; text-align: center; color: #ffffff; }
+        .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+        .body-content { padding: 30px; color: #333333; line-height: 1.6; }
+        .otp-box { background-color: #eff6ff; border: 2px dashed #3b82f6; border-radius: 6px; padding: 15px; text-align: center; margin: 25px 0; font-size: 28px; font-weight: bold; letter-spacing: 6px; color: #1d4ed8; }
+        .footer { padding: 20px; text-align: center; font-size: 12px; color: #888888; background-color: #fafafa; border-top: 1px solid #eeeeee; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Backend Poems 📜</h1>
+        </div>
+        <div class="body-content">
+            <p>Xin chào <strong th:text="${recipientName}">Người dùng</strong>,</p>
+            <p>Cảm ơn bạn đã đăng ký tài khoản tại hệ thống của chúng tôi. Dưới đây là mã xác thực OTP của bạn:</p>
+            
+            <div class="otp-box" th:text="${otpCode}">123456</div>
+            
+            <p>Mã này có hiệu lực trong <strong>5 phút</strong>. Vì lý do bảo mật, tuyệt đối không chia sẻ mã này cho bất kỳ ai khác.</p>
+            <p>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email.</p>
+        </div>
+        <div class="footer">
+            <p>© 2026 Backend Poems. Mọi quyền được bảo lưu.</p>
+        </div>
+    </div>
+</body>
+</html>

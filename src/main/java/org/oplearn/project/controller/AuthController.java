@@ -3,10 +3,13 @@ package org.oplearn.project.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.oplearn.project.dto.request.ForgotPasswordRequest;
 import org.oplearn.project.dto.request.GoogleLoginRequest;
 import org.oplearn.project.dto.request.LoginRequest;
 import org.oplearn.project.dto.request.RefreshTokenRequest;
 import org.oplearn.project.dto.request.RegisterRequest;
+import org.oplearn.project.dto.request.ResetPasswordRequest;
+import org.oplearn.project.dto.request.VerifyOtpRequest;
 import org.oplearn.project.dto.response.ResponseGeneral;
 import org.oplearn.project.dto.response.TokenResponse;
 import org.oplearn.project.exception.InvalidRefreshTokenException;
@@ -76,9 +79,30 @@ public class AuthController {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<ResponseGeneral<TokenResponse>> register(@Valid @RequestBody RegisterRequest request) {
+  public ResponseEntity<ResponseGeneral<Void>> register(@Valid @RequestBody RegisterRequest request) {
     log.info("(register) username: {}", request.getUsername());
-    return issueWithCookie(service.register(request));
+    service.register(request);
+    return ResponseEntity.ok(ResponseGeneral.ofSuccess(SUCCESS_MESSAGE));
+  }
+
+  @PostMapping("/verify-otp")
+  public ResponseEntity<ResponseGeneral<TokenResponse>> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
+    log.info("(verifyOtp) email: {}", request.getEmail());
+    return issueWithCookie(service.verifyOtp(request));
+  }
+
+  @PostMapping("/forgot-password")
+  public ResponseEntity<ResponseGeneral<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+    log.info("(forgotPassword) email: {}", request.getEmail());
+    service.forgotPassword(request);
+    return ResponseEntity.ok(ResponseGeneral.ofSuccess(SUCCESS_MESSAGE));
+  }
+
+  @PostMapping("/reset-password")
+  public ResponseEntity<ResponseGeneral<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    log.info("(resetPassword) email: {}", request.getEmail());
+    service.resetPassword(request);
+    return ResponseEntity.ok(ResponseGeneral.ofSuccess(SUCCESS_MESSAGE));
   }
 
   @PostMapping("/login/google")

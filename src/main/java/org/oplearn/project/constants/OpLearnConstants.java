@@ -71,6 +71,9 @@ public class OpLearnConstants {
     public static final String[] MATCHER_AUTH_PUBLIC_API = {
       "/api/v1/auth/login",
       "/api/v1/auth/register",
+      "/api/v1/auth/verify-otp",
+      "/api/v1/auth/forgot-password",
+      "/api/v1/auth/reset-password",
       "/api/v1/auth/refresh",
       "/api/v1/auth/logout",
       "/api/v1/auth/login/google"
