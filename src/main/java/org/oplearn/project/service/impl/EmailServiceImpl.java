@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import org.springframework.beans.factory.annotation.Value;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -22,6 +23,9 @@ public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
     private final SpringTemplateEngine templateEngine;
+
+    @Value("${spring.mail.username:}")
+    private String fromEmail;
 
     @Override
     @Async("mailTaskExecutor")
@@ -46,7 +50,10 @@ public class EmailServiceImpl implements EmailService {
             // 3. Render HTML từ file template
             String htmlContent = templateEngine.process(templateName, context);
 
-            // 4. Thiết lập người nhận, tiêu đề và nội dung HTML
+            // 4. Thiết lập người gửi, người nhận, tiêu đề và nội dung HTML
+            if (fromEmail != null && !fromEmail.isBlank()) {
+                helper.setFrom(fromEmail);
+            }
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlContent, true); // true = định dạng HTML
