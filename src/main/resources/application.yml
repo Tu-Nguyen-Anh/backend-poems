@@ -93,10 +93,10 @@ logging:
 
 aws:
   s3:
-    endpoint: ${AWS_S3_ENDPOINT:http://localhost:9000}
+    endpoint: ${AWS_S3_ENDPOINT:https://rustfs.tuvidausotoanthu.vn}
     region: ${AWS_S3_REGION:us-east-1}
-    access-key: ${AWS_S3_ACCESS_KEY:minioadmin}
-    secret-key: ${AWS_S3_SECRET_KEY:minioadmin}
+    access-key: ${AWS_S3_ACCESS_KEY:tuviadmin}
+    secret-key: ${AWS_S3_SECRET_KEY:bdd21afecd0f29be9fa6c523b27415c22c8e650c6dfe7a3b}
     bucket-name: ${AWS_S3_BUCKET_NAME:poems-media}
 
 google:
