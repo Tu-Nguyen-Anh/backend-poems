@@ -25,7 +25,7 @@ public class S3StorageService {
   @Value("${aws.s3.bucket-name:poems-media}")
   private String bucketName;
 
-  @Value("${aws.s3.endpoint:http://localhost:9000}")
+  @Value("${aws.s3.endpoint:https://rustfs.tuvidausotoanthu.vn}")
   private String endpoint;
 
   public String uploadImage(MultipartFile file) {
@@ -58,7 +58,10 @@ public class S3StorageService {
       log.info("(uploadFile) Upload file lên S3 thành công: {}", fileName);
 
 
-      String fileUrl = String.format("%s/%s/%s", endpoint, bucketName, fileName);
+      String cleanEndpoint = endpoint != null && endpoint.endsWith("/")
+        ? endpoint.substring(0, endpoint.length() - 1)
+        : endpoint;
+      String fileUrl = String.format("%s/%s/%s", cleanEndpoint, bucketName, fileName);
 
 
       return FileResponse.builder()
@@ -107,29 +110,38 @@ public class S3StorageService {
   private void createBucketIfNotExists() {
     try {
       s3Client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
-    } catch (NoSuchBucketException e) {
-      s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
-      log.info("(createBucket) Đã tạo mới Bucket: {}", bucketName);
+    } catch (Exception e) {
+      log.warn("(createBucketIfNotExists) HeadBucket không thành công (hoặc bucket chưa tồn tại): {}", e.getMessage());
+      try {
+        s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
+        log.info("(createBucket) Đã tạo mới Bucket: {}", bucketName);
+      } catch (Exception ex) {
+        log.warn("(createBucket) Không thể tạo mới bucket (có thể bucket đã tồn tại): {}", ex.getMessage());
+      }
 
-      String publicPolicy = """
-            {
-              "Version": "2012-10-17",
-              "Statement": [
-                {
-                  "Effect": "Allow",
-                  "Principal": "*",
-                  "Action": ["s3:GetObject"],
-                  "Resource": ["arn:aws:s3:::%s/*"]
-                }
-              ]
-            }
-            """.formatted(bucketName);
+      try {
+        String publicPolicy = """
+              {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": "*",
+                    "Action": ["s3:GetObject"],
+                    "Resource": ["arn:aws:s3:::%s/*"]
+                  }
+                ]
+              }
+              """.formatted(bucketName);
 
-      s3Client.putBucketPolicy(PutBucketPolicyRequest.builder()
-        .bucket(bucketName)
-        .policy(publicPolicy)
-        .build());
-      log.info("(createBucket) Đã cấu hình Public Access Policy cho Bucket: {}", bucketName);
+        s3Client.putBucketPolicy(PutBucketPolicyRequest.builder()
+          .bucket(bucketName)
+          .policy(publicPolicy)
+          .build());
+        log.info("(createBucket) Đã cấu hình Public Access Policy cho Bucket: {}", bucketName);
+      } catch (Exception ex) {
+        log.warn("(createBucket) Bỏ qua putBucketPolicy (storage provider không hỗ trợ hoặc quyền hạn chế): {}", ex.getMessage());
+      }
     }
   }
 

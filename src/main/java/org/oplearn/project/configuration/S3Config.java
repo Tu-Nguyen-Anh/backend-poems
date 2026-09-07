@@ -16,16 +16,16 @@ import java.net.URI;
 public class S3Config {
 
 
-  @Value("${aws.s3.endpoint:http://localhost:9000}")
+  @Value("${aws.s3.endpoint:https://rustfs.tuvidausotoanthu.vn}")
   private String endpoint;
 
   @Value("${aws.s3.region:us-east-1}")
   private String region;
 
-  @Value("${aws.s3.access-key:minioadmin}")
+  @Value("${aws.s3.access-key:tuviadmin}")
   private String accessKey;
 
-  @Value("${aws.s3.secret-key:minioadmin}")
+  @Value("${aws.s3.secret-key:bdd21afecd0f29be9fa6c523b27415c22c8e650c6dfe7a3b}")
   private String secretKey;
 
 
