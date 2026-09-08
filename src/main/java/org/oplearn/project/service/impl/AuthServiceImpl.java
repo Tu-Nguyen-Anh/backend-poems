@@ -91,12 +91,12 @@ public class AuthServiceImpl implements AuthService {
 
     otpRedisRepository.savePendingRegistration(request.getEmail(), pendingData, Duration.ofMinutes(5));
 
-     /*emailService.sendHtmlEmail(
+     emailService.sendHtmlEmail(
       request.getEmail(),
       "Xác thực tài khoản - Backend Poems",
       "mail/welcome-email",
       Map.of("recipientName", request.getUsername(), "otpCode", otpCode)
-    ); */
+    );
   }
 
   @Override
