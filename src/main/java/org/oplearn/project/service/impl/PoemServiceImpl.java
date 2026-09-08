@@ -186,6 +186,7 @@ public class PoemServiceImpl implements PoemService {
     existingPoem.setTransliteration(poem.getTransliteration());
     existingPoem.setTranslation(poem.getTranslation());
     existingPoem.setLanguage(poem.getLanguage());
+    existingPoem.setEra(poem.getEra());
     existingPoem.setGenreId(poem.getGenreId());
     existingPoem.setAuthorId(poem.getAuthorId());
 

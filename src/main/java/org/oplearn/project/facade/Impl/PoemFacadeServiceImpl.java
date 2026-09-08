@@ -44,6 +44,7 @@ public class PoemFacadeServiceImpl implements PoemFacadeService {
       .transliteration(request.getTransliteration())
       .translation(request.getTranslation())
       .language(request.getLanguage())
+      .era(request.getEra())
       .genreId(genre != null ? genre.getId() : null)
       .authorId(author != null ? author.getId() : null)
       .build();
@@ -77,6 +78,7 @@ public class PoemFacadeServiceImpl implements PoemFacadeService {
       .transliteration(request.getTransliteration())
       .translation(request.getTranslation())
       .language(request.getLanguage())
+      .era(request.getEra())
       .genreId(genre != null ? genre.getId() : null)
       .authorId(author != null ? author.getId() : null)
       .build();

@@ -36,6 +36,8 @@ public class PoemRequest {
   @Size(max = 50, message = "poem.language.max_length")
   private String language;
 
+  private String era;
+
   private Long genreId;
 
   private Long authorId;
