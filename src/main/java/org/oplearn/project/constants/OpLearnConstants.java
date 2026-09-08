@@ -64,6 +64,9 @@ public class OpLearnConstants {
           "/v3/api-docs/**",
           "/actuator/health",
           "/actuator/info",
+          "/actuator/metrics",
+          "/actuator/metrics/**",
+          "/api/v1/cache/**",
           "/sitemap.xml",
           "/sitemaps/**",
           "/prerender/**"
@@ -93,5 +96,24 @@ public class OpLearnConstants {
     /** Trần CỨNG cho nhánh all=true (thay Pageable.unpaged) — chống DoS kéo cả bảng
      *  trong 1 request. Tổng số (amount) vẫn đúng nhờ count query riêng. */
     public static final int MAX_ALL_SIZE = 10000;
+  }
+
+  public static class CacheConstant {
+    private CacheConstant() {
+    }
+
+    public static final String CACHE_POEMS_PAGE = "poems_page";
+    public static final String CACHE_POEMS_BROWSE = "poems_browse";
+    public static final String CACHE_POEM_DETAIL = "poem_detail";
+    public static final String CACHE_AUTHORS_PAGE = "authors_page";
+    public static final String CACHE_POEMS_LATEST = "poems_latest";
+
+    public static final String[] ALL_CACHE_NAMES = {
+      CACHE_POEMS_PAGE,
+      CACHE_POEMS_BROWSE,
+      CACHE_POEM_DETAIL,
+      CACHE_AUTHORS_PAGE,
+      CACHE_POEMS_LATEST
+    };
   }
 }

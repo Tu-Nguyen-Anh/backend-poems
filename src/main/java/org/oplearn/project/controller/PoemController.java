@@ -36,7 +36,7 @@ public class PoemController {
     @RequestParam(name = PARAM_PAGE, defaultValue = PAGE_DEFAULT) int page
   ) {
     size = Math.min(size, MAX_PAGE_SIZE);
-    log.info("(list) keyword: {}, genreId: {}, era: {}, language: {}, size: {}, page: {}", keyword, genreId, era, language, size, page);
+    log.debug("(list) keyword: {}, genreId: {}, era: {}, language: {}, size: {}, page: {}", keyword, genreId, era, language, size, page);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.list(keyword, genreId, era, language, size, page));
   }
 
@@ -79,13 +79,13 @@ public class PoemController {
     @RequestParam(name = PARAM_PAGE, defaultValue = PAGE_DEFAULT) int page
   ) {
     size = Math.min(size, MAX_PAGE_SIZE);
-    log.info("(browse) language: {}, era: {}, genreId: {}, authorId: {}, keyword: {}, size: {}, page: {}", language, era, genreId, authorId, keyword, size, page);
+    log.debug("(browse) language: {}, era: {}, genreId: {}, authorId: {}, keyword: {}, size: {}, page: {}", language, era, genreId, authorId, keyword, size, page);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.browse(language, era, genreId, authorId, keyword, size, page));
   }
 
   @GetMapping("/{id}")
   public ResponseGeneral<PoemResponse> detail(@PathVariable Long id, HttpServletRequest request) {
-    log.info("(detail) id: {}", id);
+    log.debug("(detail) id: {}", id);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, facade.detail(id, request));
   }
 
@@ -126,7 +126,7 @@ public class PoemController {
     @RequestParam(name = PARAM_PAGE, defaultValue = PAGE_DEFAULT) int page
   ) {
     size = Math.min(size, MAX_PAGE_SIZE);
-    log.info("(list latest) poem with size: {}, page: {}", size, page);
+    log.debug("(list latest) poem with size: {}, page: {}", size, page);
 
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.listPoemLatest(size, page));
   }
@@ -137,7 +137,7 @@ public class PoemController {
     @RequestParam(name = "genreIds", required = false) @Size(max = 3, message = "genre.max_selection_3") List<Long> genreIds,
     @RequestParam(name = "eras", required = false) @Size(max = 3, message = "era.max_selection_3") List<String> eras
   ) {
-    log.info("(list random) poem");
+    log.debug("(list random) poem");
 
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.randomPersonalized(authorIds, genreIds, eras));
   }

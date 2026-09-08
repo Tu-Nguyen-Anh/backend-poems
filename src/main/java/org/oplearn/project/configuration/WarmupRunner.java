@@ -40,11 +40,12 @@ public class WarmupRunner implements ApplicationRunner {
     long started = System.currentTimeMillis();
     runQuietly("poems.latest", () -> poemService.listPoemLatest(6, 0));
     runQuietly("poems.list", () -> poemService.list(null, null, null, null, 10, 0));
+    runQuietly("poems.random", () -> poemService.randomPersonalized(null, null, null));
     runQuietly("poems.stats", poemService::getStats);
     runQuietly("poems.eras", poemService::listEras);
     runQuietly("authors.featured", authorService::featured);
     runQuietly("authors.top", () -> authorService.listTopByPoemCount(1, 0));
-    runQuietly("authors.list", () -> authorService.list(null, "poem", 1, 0, false));
+    runQuietly("authors.list", () -> authorService.list(null, null, 24, 0, false));
     runQuietly("genres.list", () -> genreService.list(null, 8, 0, false));
     runQuietly("stories.list", () -> storyService.list(null, null, null, 1, 0));
     runQuietly("stories.collections", storyService::collections);

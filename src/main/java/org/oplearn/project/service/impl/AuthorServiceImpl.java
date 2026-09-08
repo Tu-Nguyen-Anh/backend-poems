@@ -13,6 +13,9 @@ import org.oplearn.project.repository.AuthorRepository;
 import org.oplearn.project.repository.PoemRepository;
 import org.oplearn.project.repository.StoryRepository;
 import org.oplearn.project.service.AuthorService;
+import static org.oplearn.project.constants.OpLearnConstants.CacheConstant.*;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +30,7 @@ public class AuthorServiceImpl implements AuthorService {
   private final PoemRepository poemRepository;
   private final StoryRepository storyRepository;
 
+  @CacheEvict(value = CACHE_AUTHORS_PAGE, allEntries = true)
   public AuthorResponse create(AuthorRequest request) {
     log.info("(Service) create author");
 
@@ -44,6 +48,7 @@ public class AuthorServiceImpl implements AuthorService {
     return AuthorResponse.from(repository.save(author));
   }
 
+  @CacheEvict(value = CACHE_AUTHORS_PAGE, allEntries = true)
   public AuthorResponse update(AuthorRequest request, Long id) {
     log.info("(Service) update author");
 
@@ -63,6 +68,7 @@ public class AuthorServiceImpl implements AuthorService {
     return AuthorResponse.from(repository.save(author));
   }
 
+  @CacheEvict(value = CACHE_AUTHORS_PAGE, allEntries = true)
   public void delete(Long id) {
     log.info("(Service) delete author");
 
@@ -84,8 +90,13 @@ public class AuthorServiceImpl implements AuthorService {
     return response;
   }
 
+  @Cacheable(
+    value = CACHE_AUTHORS_PAGE,
+    key = "'list:' + #keyword + ':' + #type + ':' + #size + ':' + #page + ':' + #isAll",
+    unless = "#result == null"
+  )
   public PageResponse<AuthorResponse> list(String keyword, String type, int size, int page, boolean isAll) {
-    log.info("(Service) list author keyword: {}, type: {}", keyword, type);
+    log.debug("(Service) list author keyword: {}, type: {}", keyword, type);
 
     Pageable pageable = isAll
       ? PageRequest.of(0, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_ALL_SIZE)

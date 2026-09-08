@@ -64,7 +64,7 @@ public class AuthorController {
     @RequestParam(name = PARAM_ALL, defaultValue = IS_ALL_DEFAULT) boolean isAll
   ) {
     size = Math.min(size, org.oplearn.project.constants.OpLearnConstants.VariableConstant.MAX_PAGE_SIZE);
-    log.info("(list) keyword: {}, type: {}, size: {}, page: {}, isAll: {}", keyword, type, size, page, isAll);
+    log.debug("(list) keyword: {}, type: {}, size: {}, page: {}, isAll: {}", keyword, type, size, page, isAll);
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE, service.list(keyword, type, size, page, isAll));
   }
 
