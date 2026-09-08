@@ -363,12 +363,15 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
     """, nativeQuery = true)
   StatsRow getStats();
 
+  @Query(value = "SELECT id FROM poems TABLESAMPLE SYSTEM (5) WHERE is_deleted = false LIMIT :n", nativeQuery = true)
+  List<Long> findFastRandomIds(@Param("n") int n);
+
   /**
    * Bốc id ngẫu nhiên trước (chỉ sort cột id, không kéo content) — rẻ hơn
    * nhiều so với ORDER BY random() trên cả dòng có nội dung bài thơ.
    */
   @Query(value = "SELECT id FROM poems WHERE is_deleted = false ORDER BY random() LIMIT :n", nativeQuery = true)
-  java.util.List<Long> findRandomIds(@Param("n") int n);
+  List<Long> findRandomIds(@Param("n") int n);
 
   @Query(value = """
     SELECT id FROM poems
@@ -405,6 +408,6 @@ public interface PoemRepository extends JpaRepository<Poem, Long> {
         LEFT JOIN Genre g ON p.genreId = g.id
         WHERE p.id IN :ids
     """)
-  java.util.List<PoemResponse> findResponsesByIds(@Param("ids") java.util.List<Long> ids);
+  List<PoemResponse> findResponsesByIds(@Param("ids") java.util.List<Long> ids);
 
 }

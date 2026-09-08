@@ -12,6 +12,10 @@ import org.oplearn.project.repository.PoemRepository;
 import org.oplearn.project.repository.PoemTranslationRepository;
 import org.oplearn.project.service.PoemService;
 import org.springframework.data.domain.Page;
+import static org.oplearn.project.constants.OpLearnConstants.CacheConstant.*;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -28,6 +32,11 @@ public class PoemServiceImpl implements PoemService {
   private final PoemRepository repository;
   private final PoemTranslationRepository translationRepository;
 
+  @Cacheable(
+    value = CACHE_POEMS_PAGE,
+    key = "'list:' + #keyword + ':' + #genreId + ':' + #era + ':' + #language + ':' + #size + ':' + #page",
+    unless = "#result == null"
+  )
   @Override
   public PageResponse<PoemResponse> list(String keyword, Long genreId, String era, String language, int size, int page) {
     Pageable pageable = PageRequest.of(page, size);
@@ -75,6 +84,11 @@ public class PoemServiceImpl implements PoemService {
     });
   }
 
+  @Cacheable(
+    value = CACHE_POEMS_BROWSE,
+    key = "'browse:' + #language + ':' + #era + ':' + #genreId + ':' + #authorId + ':' + #keyword + ':' + #size + ':' + #page",
+    unless = "#result == null"
+  )
   @Override
   public PageResponse<PoemResponse> browse(String language, String era, Long genreId, Long authorId, String keyword, int size, int page) {
     Pageable pageable = PageRequest.of(page, size);
@@ -104,6 +118,7 @@ public class PoemServiceImpl implements PoemService {
     );
   }
 
+  @Cacheable(value = CACHE_POEM_DETAIL, key = "#id", unless = "#result == null")
   @Override
   public PoemResponse detail(Long id) {
     PoemResponse response = repository.findByIdAndReturnResponse(id)
@@ -128,6 +143,12 @@ public class PoemServiceImpl implements PoemService {
   }
 
   @Transactional
+  @Caching(evict = {
+    @CacheEvict(value = CACHE_POEM_DETAIL, key = "#id"),
+    @CacheEvict(value = CACHE_POEMS_PAGE, allEntries = true),
+    @CacheEvict(value = CACHE_POEMS_BROWSE, allEntries = true),
+    @CacheEvict(value = CACHE_POEMS_LATEST, allEntries = true)
+  })
   public void delete(Long id) {
     if (repository.findByIdAndIsDeletedFalse(id).isEmpty()) {
       throw new PoemNotFoundException();
@@ -135,12 +156,23 @@ public class PoemServiceImpl implements PoemService {
     repository.softDeleteById(id);
   }
 
+  @Caching(evict = {
+    @CacheEvict(value = CACHE_POEMS_PAGE, allEntries = true),
+    @CacheEvict(value = CACHE_POEMS_BROWSE, allEntries = true),
+    @CacheEvict(value = CACHE_POEMS_LATEST, allEntries = true)
+  })
   public Poem create(Poem poem) {
     log.info("(service) create poem");
 
     return repository.save(poem);
   }
 
+  @Caching(evict = {
+    @CacheEvict(value = CACHE_POEM_DETAIL, key = "#id"),
+    @CacheEvict(value = CACHE_POEMS_PAGE, allEntries = true),
+    @CacheEvict(value = CACHE_POEMS_BROWSE, allEntries = true),
+    @CacheEvict(value = CACHE_POEMS_LATEST, allEntries = true)
+  })
   public Poem update(Long id, Poem poem) {
     log.info("(service) update poem");
 
@@ -216,6 +248,11 @@ public class PoemServiceImpl implements PoemService {
     return value;
   }
 
+  @Cacheable(
+    value = CACHE_POEMS_LATEST,
+    key = "'latest:' + #size + ':' + #page",
+    unless = "#result == null"
+  )
   public PageResponse<PoemResponse> listPoemLatest(int size, int page) {
     Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
@@ -246,10 +283,9 @@ public class PoemServiceImpl implements PoemService {
 
     List<Long> ids = hasPreferences
       ? repository.findPersonalizedRandomIds(authorArray, genreArray, eraArray, 10)
-      : repository.findRandomIds(10);
+      : repository.findFastRandomIds(10);
 
-
-    if (ids.isEmpty()) {
+    if (ids.size() < 10) {
       ids = repository.findRandomIds(10);
     }
 

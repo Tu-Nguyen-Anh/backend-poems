@@ -92,10 +92,10 @@ public class PoemFacadeServiceImpl implements PoemFacadeService {
 
   @Override
   public PoemResponse detail(Long id, HttpServletRequest request) {
-    log.info("(facade) detail poem id = {}", id);
-    Poem poem = poemService.getAvailablePoemAndThrow(id);
-    statisticService.increaseView(poem.getId(), ClientIpUtils.getUserIdentifier(request));
-    return poemService.detail(id);
+    log.debug("(facade) detail poem id = {}", id);
+    PoemResponse response = poemService.detail(id);
+    statisticService.increaseView(response.getId(), ClientIpUtils.getUserIdentifier(request));
+    return response;
   }
 
   @Override

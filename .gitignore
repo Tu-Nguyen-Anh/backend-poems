@@ -43,3 +43,5 @@ target/
 *.log
 /backend-poems/
 
+### K6 Load Testing Scripts ###
+test-*.js
