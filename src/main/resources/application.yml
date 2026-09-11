@@ -107,6 +107,8 @@ security:
 logging:
   level:
     org.oplearn: ${LOG_LEVEL:info}
+    org.apache.kafka: WARN
+    org.springframework.kafka: INFO
 
 aws:
   s3:

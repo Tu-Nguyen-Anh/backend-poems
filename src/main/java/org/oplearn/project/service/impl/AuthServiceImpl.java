@@ -19,6 +19,7 @@ import org.oplearn.project.dto.response.TokenResponse;
 import org.oplearn.project.enums.AuthProvider;
 import org.oplearn.project.entity.User;
 import org.oplearn.project.enums.UserRole;
+import org.oplearn.project.event.ForgotPasswordEvent;
 import org.oplearn.project.exception.EmailAlreadyExistedException;
 import org.oplearn.project.exception.InvalidCredentialException;
 import org.oplearn.project.exception.InvalidOtpException;
@@ -26,6 +27,8 @@ import org.oplearn.project.exception.InvalidRefreshTokenException;
 import org.oplearn.project.exception.OtpExpiredException;
 import org.oplearn.project.exception.UserNotFoundException;
 import org.oplearn.project.exception.UsernameAlreadyExistedException;
+import org.oplearn.project.constants.OpLearnConstants.KafkaConstant;
+import org.oplearn.project.event.OtpEmailEvent;
 import org.oplearn.project.repository.UserRepository;
 import org.oplearn.project.repository.redis.OtpRedisRepository;
 import org.oplearn.project.repository.redis.TokenRedisRepository;
@@ -33,6 +36,7 @@ import org.oplearn.project.security.jwt.JwtTokenProvider;
 import org.oplearn.project.service.AuthService;
 import org.oplearn.project.service.EmailService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -54,14 +58,14 @@ public class AuthServiceImpl implements AuthService {
   private final UserRepository userRepository;
   private final TokenRedisRepository tokenRedisRepository;
   private final OtpRedisRepository otpRedisRepository;
-  private final EmailService emailService;
   private final JwtTokenProvider jwtTokenProvider;
   private final PasswordEncoder passwordEncoder;
+  private final KafkaTemplate<String, Object> kafkaTemplate;
 
   @Override
   public TokenResponse login(LoginRequest request) {
     User user = userRepository.findByUsernameAndIsDeletedFalse(request.getUsername())
-          .orElseThrow(InvalidCredentialException::new);
+      .orElseThrow(InvalidCredentialException::new);
 
     if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
       throw new InvalidCredentialException();
@@ -91,18 +95,31 @@ public class AuthServiceImpl implements AuthService {
 
     otpRedisRepository.savePendingRegistration(request.getEmail(), pendingData, Duration.ofMinutes(5));
 
-     emailService.sendHtmlEmail(
-      request.getEmail(),
-      "Xác thực tài khoản - Backend Poems",
-      "mail/welcome-email",
-      Map.of("recipientName", request.getUsername(), "otpCode", otpCode)
-    );
+    OtpEmailEvent emailEvent = OtpEmailEvent.builder()
+      .to(request.getEmail())
+      .subject("Xác thực tài khoản - Backend Poems")
+      .templateName("mail/welcome-email")
+      .variables(Map.of("recipientName", request.getUsername(), "otpCode", otpCode))
+      .createdAt(Instant.now())
+      .build();
+
+    kafkaTemplate.send(KafkaConstant.TOPIC_AUTH_REGISTRATION_OTP, request.getEmail(), emailEvent)
+      .whenComplete((result, ex) -> {
+        if (ex != null) {
+          log.error("(register) gửi OtpEmailEvent vào Kafka thất bại cho email {}: {}", request.getEmail(), ex.getMessage());
+        } else {
+          log.info("(register) đã gửi OtpEmailEvent vào topic {} [partition {}] với offset {}",
+            result.getRecordMetadata().topic(),
+            result.getRecordMetadata().partition(),
+            result.getRecordMetadata().offset());
+        }
+      });
   }
 
   @Override
   public TokenResponse verifyOtp(VerifyOtpRequest request) {
     PendingRegisterData pendingData = otpRedisRepository.getPendingRegistration(request.getEmail())
-          .orElseThrow(OtpExpiredException::new);
+      .orElseThrow(OtpExpiredException::new);
 
     if (!pendingData.getOtpCode().equals(request.getOtp())) {
       throw new InvalidOtpException();
@@ -135,30 +152,43 @@ public class AuthServiceImpl implements AuthService {
   @Override
   public void forgotPassword(ForgotPasswordRequest request) {
     User user = userRepository.findByEmailAndIsDeletedFalse(request.getEmail())
-          .orElseThrow(UserNotFoundException::new);
+      .orElseThrow(UserNotFoundException::new);
 
     String otpCode = String.valueOf((int) ((Math.random() * 900000) + 100000));
     otpRedisRepository.saveForgotPasswordOtp(request.getEmail(), otpCode, Duration.ofMinutes(5));
 
-    emailService.sendHtmlEmail(
-          request.getEmail(),
-          "Yêu cầu đặt lại mật khẩu - Backend Poems 📜",
-          "mail/forgot-password-email",
-          Map.of("recipientName", user.getUsername(), "otpCode", otpCode)
-    );
+    ForgotPasswordEvent forgotPasswordEvent = ForgotPasswordEvent.builder()
+      .to(request.getEmail())
+      .subject("Yêu cầu đặt lại mật khẩu - Backend Poems 📜")
+      .templateName("mail/forgot-password-email")
+      .variables(Map.of("recipientName", user.getUsername(), "otpCode", otpCode))
+      .createdAt(Instant.now())
+      .build();
+
+    kafkaTemplate.send(KafkaConstant.TOPIC_AUTH_FORGOT_PASSWORD_OTP, request.getEmail(), forgotPasswordEvent)
+      .whenComplete((result, ex) -> {
+        if (ex != null) {
+          log.error("(register) gửi ForgotPasswordEvent thất bại cho email : {}", ex);
+        } else {
+          log.info("(register) đã gửi ForgotPasswordEvent vào topic {} [partition {}] với offset {}",
+            result.getRecordMetadata().topic(),
+            result.getRecordMetadata().partition(),
+            result.getRecordMetadata().offset());
+        }
+      });
   }
 
   @Override
   public void resetPassword(ResetPasswordRequest request) {
     String savedOtp = otpRedisRepository.getForgotPasswordOtp(request.getEmail())
-          .orElseThrow(OtpExpiredException::new);
+      .orElseThrow(OtpExpiredException::new);
 
     if (!savedOtp.equals(request.getOtp())) {
       throw new InvalidOtpException();
     }
 
     User user = userRepository.findByEmailAndIsDeletedFalse(request.getEmail())
-          .orElseThrow(UserNotFoundException::new);
+      .orElseThrow(UserNotFoundException::new);
 
     user.setPassword(passwordEncoder.encode(request.getNewPassword()));
     userRepository.save(user);
@@ -171,10 +201,10 @@ public class AuthServiceImpl implements AuthService {
     Claims claims = parseRefreshTokenClaims(refreshToken);
 
     Long userId = tokenRedisRepository.findUserIdByRefreshToken(claims.getId())
-          .orElseThrow(InvalidRefreshTokenException::new);
+      .orElseThrow(InvalidRefreshTokenException::new);
 
     User user = userRepository.findByIdAndIsDeletedFalse(userId)
-          .orElseThrow(InvalidRefreshTokenException::new);
+      .orElseThrow(InvalidRefreshTokenException::new);
 
     tokenRedisRepository.deleteRefreshToken(claims.getId());
     return issueTokens(user);
@@ -213,7 +243,7 @@ public class AuthServiceImpl implements AuthService {
           .providerId(googleUserId)
           .build();
         return userRepository.save(newUser);
-  });
+      });
     return issueTokens(user);
   }
 
@@ -281,16 +311,16 @@ public class AuthServiceImpl implements AuthService {
 
     String refreshTokenId = jwtTokenProvider.parseClaims(refreshToken).getId();
     tokenRedisRepository.saveRefreshToken(
-          refreshTokenId,
-          user.getId(),
-          Duration.ofMillis(jwtTokenProvider.getRefreshExpirationMs())
+      refreshTokenId,
+      user.getId(),
+      Duration.ofMillis(jwtTokenProvider.getRefreshExpirationMs())
     );
 
     return TokenResponse.of(
-          accessToken,
-          refreshToken,
-          TYPE_TOKEN.trim(),
-          jwtTokenProvider.getExpirationMs() / 1000
+      accessToken,
+      refreshToken,
+      TYPE_TOKEN.trim(),
+      jwtTokenProvider.getExpirationMs() / 1000
     );
   }
 }
