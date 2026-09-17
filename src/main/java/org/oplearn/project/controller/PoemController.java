@@ -115,7 +115,7 @@ public class PoemController {
   public ResponseGeneral<Void> delete(@PathVariable Long id) {
     log.info("(delete) poem id: {}", id);
 
-    service.delete(id);
+    facade.delete(id);
 
     return ResponseGeneral.ofSuccess(SUCCESS_MESSAGE);
   }

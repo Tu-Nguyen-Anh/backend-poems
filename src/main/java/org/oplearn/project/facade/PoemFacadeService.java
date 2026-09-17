@@ -12,4 +12,6 @@ public interface PoemFacadeService {
   PoemResponse detail(Long id, HttpServletRequest request);
 
   void share(Long id);
+
+  void delete(Long id);
 }

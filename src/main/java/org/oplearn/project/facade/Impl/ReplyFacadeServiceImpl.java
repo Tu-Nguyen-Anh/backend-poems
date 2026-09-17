@@ -13,6 +13,7 @@ import org.oplearn.project.entity.User;
 import org.oplearn.project.exception.UserUnauthorizedException;
 import org.oplearn.project.facade.ReplyFacadeService;
 import org.oplearn.project.service.CommentService;
+import org.oplearn.project.service.NotificationService;
 import org.oplearn.project.service.ReplyService;
 import org.oplearn.project.service.StatisticService;
 import org.oplearn.project.service.UserService;
@@ -28,6 +29,7 @@ public class ReplyFacadeServiceImpl implements ReplyFacadeService {
   private final UserService userService;
   private final CommentService commentService;
   private final StatisticService statisticService;
+  private final NotificationService notificationService;
 
   public ReplyResponse create(ReplyRequest request) {
     log.info("(facade) create reply)");
@@ -51,6 +53,8 @@ public class ReplyFacadeServiceImpl implements ReplyFacadeService {
     if (comment.getPoemId() != null) {
       statisticService.increaseComment(comment.getPoemId());
     }
+
+    notificationService.createAndSendReplyNotification(savedReply, comment, currentUser);
 
     return ReplyResponse.from(
       savedReply,
